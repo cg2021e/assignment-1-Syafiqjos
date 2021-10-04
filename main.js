@@ -3,6 +3,52 @@ function main(){
 
     const previewCanvas = document.getElementById('previewCanvas')
     const gl = previewCanvas.getContext('webgl')
+
+    let vertexShaderSource = `
+        attribute vec3 aPosition;
+        attribute vec3 aColor;
+        varying vec3 vColor;
+
+        void main(){
+            gl_Position = vec4(aPosition, 1.0);
+            vColor = aColor;
+        }
+    `;
+
+    let fragmentShaderSource = `
+        precision mediump float;
+        varying vec3 vColor;
+        
+        void main(){
+            gl_FragColor = vec4(vColor, 1.0);
+        }
+    `;
+
+    eraserObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource)
+    eraserObj.vertices = [
+        -0.5, -0.5, 0.0, 0.0, 1.0, 0.0,     // Point A
+         0.5, -0.5, 0.0, 0.0, 0.0, 1.0,     // Point B
+         0.0,  0.5, 0.0, 1.0, 0.0, 0.0      // Point C
+    ];
+    eraserObj.indices = [
+        0, 1, 2
+    ];
+    
+    otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource)
+    otherObj.vertices = [
+        -0.5, -0.5, 0.0, 0.0, 1.0, 0.0,     // Point A
+         0.5, -0.5, 0.0, 0.0, 0.0, 1.0,     // Point B
+         1.0,  0.5, 0.0, 1.0, 0.0, 0.0      // Point C
+    ];
+    otherObj.indices = [
+        0, 1, 2
+    ];
+
+    world = WebGLWorld(gl)
+    world.AddObject(eraserObj)
+    world.AddObject(otherObj)
+    
+    world.Deploy()
 }
 
 main()
