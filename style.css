@@ -1,3 +1,19 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-height: 100vh;
+
+    background: linear-gradient(45deg, rgb(0, 0, 0), rgb(255, 5, 5));
+}
+
 .preview-canvas {
-    border: 1px solid black;
+    box-shadow : 0px 0px 50px rgba(0, 0, 0, 0.2);
 }
