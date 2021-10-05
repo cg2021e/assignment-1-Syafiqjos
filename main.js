@@ -36,6 +36,10 @@ function main(){
     eraserObj.indices = [
         0, 1, 2
     ];
+    eraserObj.animateFunc = function(pos){  
+        pos.x += 0.002
+        return pos
+    }
     
     otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource)
     otherObj.vertices = [
@@ -75,7 +79,9 @@ function WebGLObject(gl, vertexShaderSource, fragmentShaderSource) {
             vertexBuffer: null,
             fragmentBuffer: null
         },
-        shaderProgram: null
+        shaderProgram: null,
+        animateFunc: null,
+        customProperties: {}
     }
 }
 
@@ -137,6 +143,7 @@ function WebGLWorld(gl){
             if (this.options.isDeployed) {
                 if (this.options.isRendering){
                     this.clearBackgroundRender();
+                    this.animateObjects();
                     this.renderObjects();
                 }
                 requestAnimationFrame(() => { this.Render() });
@@ -183,5 +190,15 @@ function WebGLWorld(gl){
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
             this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
         },
+        animateObjects(){
+            this.objects.forEach((item)=>{
+                this.animateObject(item);
+            });
+        },
+        animateObject(item){
+            if (item && item.animateFunc != null) {
+                item.pos = item.animateFunc(item.pos);
+            }
+        }
     }
 }
