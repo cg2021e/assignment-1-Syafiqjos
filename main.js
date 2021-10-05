@@ -244,14 +244,34 @@ function main(){
         ...makeCord2(-0.27442, -0.28098), ...colorSoPink,
         ...makeCord2(-0.14812, -0.30365), ...colorSoPink, // D33
         
-        ...makeCord2(), ...colorSoPink,
-        ...makeCord2(), ...colorSoPink,
-        ...makeCord2(), ...colorSoPink,
-        ...makeCord2(), ...colorSoPink,
+        ...makeCord2(-0.2772, -0.34361), ...colorRatherPink, //D34
+        ...makeCord2(-0.13873, -0.35679), ...colorRatherPink,
+        ...makeCord2(0.23383, -0.30075), ...colorRatherPink,
+        ...makeCord2(0.65584, -0.2381), ...colorRatherPink,
+        ...makeCord2(0.73281, -0.19169), ...colorRatherPink, //D38
+
+        ...makeCord2(-0.44001, -0.0892), ...colorRatherPink, //D39
+        ...makeCord2(-0.42664, -0.17144), ...colorRatherPink,
+        ...makeCord2(-0.3857, -0.25212), ...colorRatherPink,
+        ...makeCord2(-0.37336, -0.36567), ...colorRatherPink,
+        ...makeCord2(-0.31905, -0.45453), ...colorRatherPink,
+        ...makeCord2(-0.28503, -0.53835), ...colorRatherPink,
+        ...makeCord2(-0.14045, -0.55642), ...colorRatherPink,
+        ...makeCord2(0.25454, -0.49446), ...colorRatherPink,
+        ...makeCord2(0.66244, -0.43251), ...colorRatherPink,
+        ...makeCord2(0.7373, -0.3912), ...colorRatherPink, //D48
+        
+        ...makeCord2(), ...colorRatherPink,
+        ...makeCord2(), ...colorRatherPink,
+        ...makeCord2(), ...colorRatherPink,
+        ...makeCord2(), ...colorRatherPink,
+        ...makeCord2(), ...colorRatherPink,
+        ...makeCord2(), ...colorRatherPink,
+        ...makeCord2(), ...colorRatherPink,
 
 
 
-        ...makeCord2(), ...colorSoPink,
+        ...makeCord2(), ...colorRatherPink,
     ];
     otherObj.indices = [
         ...makeBatchIndices(0, 15, 5),
@@ -263,7 +283,10 @@ function main(){
         11, 12, 22,
         12, 13, 22,
         13, 14, 22,
-
+        ...makeBatchIndices(23, 15, 8),
+        30, 22, 31,
+        31, 22, 32,
+        32, 22, 33
     ];
 
     otherObj.vertices = otherObj.vertices.map((x, i) => {
