@@ -261,17 +261,27 @@ function main(){
         ...makeCord2(0.66244, -0.43251), ...colorRatherPink,
         ...makeCord2(0.7373, -0.3912), ...colorRatherPink, //D48
         
-        ...makeCord2(), ...colorRatherPink,
-        ...makeCord2(), ...colorRatherPink,
-        ...makeCord2(), ...colorRatherPink,
-        ...makeCord2(), ...colorRatherPink,
-        ...makeCord2(), ...colorRatherPink,
-        ...makeCord2(), ...colorRatherPink,
-        ...makeCord2(), ...colorRatherPink,
+        ...makeCord2(-0.54746, 0.35457), ...colorRatherPink, //D49
+        ...makeCord2(-0.54368, 0.26133), ...colorRatherPink,
+        ...makeCord2(-0.51653, 0.19962), ...colorRatherPink,
+        ...makeCord2(-0.50912, 0.12309), ...colorRatherPink,
+        ...makeCord2(-0.48197, 0.06879), ...colorRatherPink, //D53
+        
+        ...makeCord2(-0.4795, -0.02008), ...colorNotPink, //D54
+        ...makeCord2(-0.47349, -0.09431), ...colorNotPink,
+        ...makeCord2(-0.45415, -0.22517), ...colorNotPink,
+        ...makeCord2(-0.4, -0.4), ...colorNotPink,
+        ...makeCord2(-0.35473, -0.51512), ...colorNotPink,
+        ...makeCord2(-0.30052, -0.58224), ...colorNotPink,
+        ...makeCord2(-0.14045, -0.60031), ...colorNotPink,
+        ...makeCord2(0.26228, -0.53319), ...colorNotPink,
+        ...makeCord2(0.67276, -0.47123), ...colorNotPink,
+        ...makeCord2(0.73214, -0.44283), ...colorNotPink, //D63
 
-
-
-        ...makeCord2(), ...colorRatherPink,
+        ...makeCord2(-0.31859, -0.63129), ...colorNotPink, //D64
+        ...makeCord2(-0.19983, -0.69067), ...colorNotPink,
+        ...makeCord2(0.28294, -0.61322), ...colorNotPink,
+        ...makeCord2(0.67793, -0.55384), ...colorNotPink, //D67
     ];
     otherObj.indices = [
         ...makeBatchIndices(0, 15, 5),
@@ -305,7 +315,31 @@ function main(){
         37, 48, 47,
         37, 38, 48,
 
+        ...makeBatchIndices(44, 59, 5),
+        ...makeBatchIndices(59, 64, 4),
+
+        62, 63, 67,
+
+        ...makeBatchIndices(25, 49, 5),
+
+        53, 29, 54,
+        29, 30, 54,
+        54, 30, 39,
+        54, 39, 55,
+
+        ...makeBatchIndices(42, 57, 3),
+        58, 59, 64,
+
+        34, 44, 43,
+        32, 34, 43,
+        32, 43, 42,
+        41, 32, 42,
+        31, 32, 41,
         
+        ...makeBatchIndices(39, 55, 5),
+        ...makeBatchIndices(30, 39, 2),
+
+        40, 31, 41
     ];
 
     otherObj.vertices = otherObj.vertices.map((x, i) => {
