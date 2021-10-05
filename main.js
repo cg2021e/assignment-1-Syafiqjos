@@ -205,21 +205,80 @@ function main(){
     //     return pos
     // }
     
-    // otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource)
-    // otherObj.vertices = [
-    //     -0.5, -0.5, 0.0, 0.0, 1.0, 0.0,     // Point A
-    //      0.5, -0.5, 0.0, 0.0, 0.0, 1.0,     // Point B
-    //      1.0,  0.5, 0.0, 1.0, 0.0, 0.0      // Point C
-    // ];
-    // otherObj.indices = [
-    //     0, 1, 2
-    // ];
+    otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource)
+    otherObj.vertices = [
+        ...makeCord2(0.11096, 0.66467), ...colorSoPink, // D0
+        ...makeCord2(0.23079, 0.63229), ...colorSoPink,
+        ...makeCord2(0.2567, 0.57399), ...colorSoPink,
+        ...makeCord2(0.30851, 0.51246), ...colorSoPink,
+        ...makeCord2(0.33118, 0.46712), ...colorSoPink,
+        ...makeCord2(0.37328, 0.41531), ...colorSoPink,
+        ...makeCord2(0.38948, 0.35701), ...colorSoPink,
+        ...makeCord2(0.46396, 0.29872), ...colorSoPink,
+        ...makeCord2(0.47368, 0.24043), ...colorSoPink,
+        ...makeCord2(0.54816, 0.1627), ...colorSoPink,
+        ...makeCord2(0.55464, 0.11412), ...colorSoPink,
+        ...makeCord2(0.63236, 0.02344), ...colorSoPink,
+        ...makeCord2(0.65827, -0.0478), ...colorSoPink,
+        ...makeCord2(0.70685, -0.12229), ...colorSoPink,
+        ...makeCord2(0.63884, -0.18058), ...colorSoPink, // D14
+
+        ...makeCord2(-0.16107, 0.64524), ...colorSoPink, // D15
+        ...makeCord2(-0.11319, 0.52165), ...colorSoPink,
+        ...makeCord2(-0.05402, 0.4087), ...colorSoPink,
+        ...makeCord2(0.00246, 0.27154), ...colorSoPink,
+        ...makeCord2(0.04549, 0.15589), ...colorSoPink,
+        ...makeCord2(0.10197, 0.03218), ...colorSoPink,
+        ...makeCord2(0.16445, -0.08901), ...colorSoPink,
+        ...makeCord2(0.20421, -0.23481), ...colorSoPink, // D22
+
+        ...makeCord2(-0.47845, 0.6161), ...colorSoPink, // D23
+        ...makeCord2(-0.55319, 0.56026), ...colorSoPink,
+        ...makeCord2(-0.53998, 0.43798), ...colorSoPink,
+        ...makeCord2(-0.49788, 0.32139), ...colorSoPink,
+        ...makeCord2(-0.47845, 0.22747), ...colorSoPink,
+        ...makeCord2(-0.43311, 0.14003), ...colorSoPink,
+        ...makeCord2(-0.43311, 0.04935), ...colorSoPink,
+        ...makeCord2(-0.39101, -0.064), ...colorSoPink,
+        ...makeCord2(-0.33919, -0.17411), ...colorSoPink,
+        ...makeCord2(-0.27442, -0.28098), ...colorSoPink,
+        ...makeCord2(-0.14812, -0.30365), ...colorSoPink, // D33
+        
+        ...makeCord2(), ...colorSoPink,
+        ...makeCord2(), ...colorSoPink,
+        ...makeCord2(), ...colorSoPink,
+        ...makeCord2(), ...colorSoPink,
+
+
+
+        ...makeCord2(), ...colorSoPink,
+    ];
+    otherObj.indices = [
+        ...makeBatchIndices(0, 15, 5),
+        4, 6, 19,
+        5, 6, 19,
+        6, 7, 19,
+        7, 8, 19,
+        ...makeBatchIndices(8, 19, 4),
+        11, 12, 22,
+        12, 13, 22,
+        13, 14, 22,
+
+    ];
+
+    otherObj.vertices = otherObj.vertices.map((x, i) => {
+        if (i % 6 >= 3) {
+            return x;
+        }
+        return x * 0.5
+    });
+    otherObj.pos.y = -0.5
 
     world = WebGLWorld(gl);
     world.clearColor = [0.8, 0.8, 0.8, 1.0];
 
-    world.AddObject(eraserObj);
-    // world.AddObject(otherObj);
+    // world.AddObject(eraserObj);
+    world.AddObject(otherObj);
     
     world.Deploy();
     world.Render();
