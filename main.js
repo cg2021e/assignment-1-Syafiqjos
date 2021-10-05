@@ -31,7 +31,7 @@ function main(){
     eraserObj.vertices = [
         -0.5, -0.5, 0.0, 0.0, 1.0, 0.0,     // Point A
          0.5, -0.5, 0.0, 0.0, 0.0, 1.0,     // Point B
-         0.0,  0.5, 0.0, 1.0, 0.0, 0.0      // Point C
+        -0.5,  0.5, 0.0, 1.0, 0.0, 0.0      // Point C
     ];
     eraserObj.indices = [
         0, 1, 2
@@ -145,6 +145,7 @@ function WebGLWorld(gl){
                     this.clearBackgroundRender();
                     this.animateObjects();
                     this.renderObjects();
+                    this.normalizeCanvasSize();
                 }
                 requestAnimationFrame(() => { this.Render() });
             } else {
@@ -155,6 +156,9 @@ function WebGLWorld(gl){
             this.gl.clearColor(0.5, 0.5, 0.5, 0.6);
             this.gl.enable(gl.DEPTH_TEST);
             this.gl.clear(gl.COLOR_BUFFER_BIT);
+        },
+        normalizeCanvasSize(){
+            this.gl.viewport(0, 0, 640, 640);
         },
         renderObjects(){
             this.objects.forEach((item)=>{
