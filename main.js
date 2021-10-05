@@ -27,33 +27,77 @@ function main(){
         }
     `;
 
+    colorSoPink = [181/255, 94/255, 129/255];
+    colorRatherPink = [117/255, 55/255, 66/255];
+    colorNotPink = [79/255, 55/255, 63/255];
+    colorSeemsBlack = [23/255, 19/255, 22/255];
+
     eraserObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource)
+    // eraserObj.vertices = [
+    //     -0.61, 0.26, 0.0, ...colorSoPink,     // 0
+    //      0.62, 0.26, 0.0, ...colorSoPink,     // 1
+    //      0.75, -0.14, 0.0, ...colorSoPink,    // 2
+    //      -0.75, -0.1, 0.0, ...colorSoPink,    // 3
+    //      -0.71, -0.25, 0.0, ...colorNotPink,   // 4
+    //      0.72, -0.28, 0.0, ...colorNotPink,    // 5
+    //      -0.65, -0.36, 0.0, ...colorSeemsBlack,   // 6
+    //      0.66, -0.36, 0.0, ...colorSeemsBlack,    // 7
+    // ];
+    // eraserObj.indices = [
+    //     0, 1, 2,
+    //     2, 3, 0,
+    //     3, 2, 5,
+    //     3, 5, 4,
+    //     4, 5, 7,
+    //     4, 7, 6
+    // ];
+
     eraserObj.vertices = [
-        -0.5, -0.5, 0.0, 0.0, 1.0, 0.0,     // Point A
-         0.5, -0.5, 0.0, 0.0, 0.0, 1.0,     // Point B
-        -0.5,  0.5, 0.0, 1.0, 0.0, 0.0      // Point C
+        -0.61, 0.26, 0.0, ...colorSoPink,     // 0
+         0.62, 0.26, 0.0, ...colorSoPink,     // 1
+         0.75, -0.14, 0.0, ...colorSoPink,    // 2
+         -0.75, -0.1, 0.0, ...colorSoPink,    // 3
+         -0.71, -0.25, 0.0, ...colorNotPink,   // 4
+         0.72, -0.28, 0.0, ...colorNotPink,    // 5
+         -0.65, -0.36, 0.0, ...colorSeemsBlack,   // 6
+         0.66, -0.36, 0.0, ...colorSeemsBlack,    // 7
     ];
     eraserObj.indices = [
-        0, 1, 2
-    ];
-    eraserObj.animateFunc = function(pos){  
-        pos.x += 0.002
-        return pos
-    }
-    
-    otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource)
-    otherObj.vertices = [
-        -0.5, -0.5, 0.0, 0.0, 1.0, 0.0,     // Point A
-         0.5, -0.5, 0.0, 0.0, 0.0, 1.0,     // Point B
-         1.0,  0.5, 0.0, 1.0, 0.0, 0.0      // Point C
-    ];
-    otherObj.indices = [
-        0, 1, 2
+        0, 1, 2,
+        2, 3, 0,
+        3, 2, 5,
+        3, 5, 4,
+        4, 5, 7,
+        4, 7, 6
     ];
 
+    eraserObj.vertices = eraserObj.vertices.map((x, i) => {
+        if (i % 6 >= 3) {
+            return x;
+        }
+        return x * 0.5
+    });
+    eraserObj.pos.y = -0.5
+    // eraserObj.animateFunc = function(pos){  
+    //     pos.x += 0.0089
+    //     return pos
+    // }
+    
+    // otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource)
+    // otherObj.vertices = [
+    //     -0.5, -0.5, 0.0, 0.0, 1.0, 0.0,     // Point A
+    //      0.5, -0.5, 0.0, 0.0, 0.0, 1.0,     // Point B
+    //      1.0,  0.5, 0.0, 1.0, 0.0, 0.0      // Point C
+    // ];
+    // otherObj.indices = [
+    //     0, 1, 2
+    // ];
+
     world = WebGLWorld(gl);
+    world.clearColor = [0.8, 0.8, 0.8, 1.0];
+
     world.AddObject(eraserObj);
-    world.AddObject(otherObj);
+    // world.AddObject(otherObj);
     
     world.Deploy();
     world.Render();
@@ -94,6 +138,7 @@ function WebGLWorld(gl){
             isDeployed: false,
             isRendering: false,
         },
+        clearColor: [1.0, 1.0, 1.0, 1.0],
         AddObject(webGLObject){
             this.objects.push(webGLObject);
         },
@@ -153,7 +198,7 @@ function WebGLWorld(gl){
             }
         },
         clearBackgroundRender(){
-            this.gl.clearColor(0.5, 0.5, 0.5, 0.6);
+            this.gl.clearColor(...this.clearColor);
             this.gl.enable(gl.DEPTH_TEST);
             this.gl.clear(gl.COLOR_BUFFER_BIT);
         },
