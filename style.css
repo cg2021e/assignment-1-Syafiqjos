@@ -64,6 +64,13 @@ h2, h3, p {
 
     font-family: 'Quicksand';
     font-size: 1.2rem;
+
+    cursor: pointer;
+}
+
+.preview-button:hover {
+    background-color: white;
+    color: rgb(100, 42, 50);
 }
 
 a {
