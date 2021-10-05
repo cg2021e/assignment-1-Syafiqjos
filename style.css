@@ -16,4 +16,5 @@ body {
 
 .preview-canvas {
     box-shadow : 0px 0px 50px rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
 }
