@@ -2,6 +2,7 @@ function main(){
     console.log("MAIN")
 
     const previewCanvas = document.getElementById('previewCanvas')
+    const previewButton = document.getElementById('previewButton')
     const gl = previewCanvas.getContext('webgl')
 
     let vertexShaderSource = `
@@ -72,6 +73,16 @@ function main(){
     resizeObj(otherObj, 0.5);
     otherObj.pos.y = -0.5;
     otherObj.pos.x = -0.5;
+
+    // Preview Button
+    previewButton.addEventListener('click', () => {
+        if (eraserObj.customProperties.isAnimateFloating) {
+            eraserObj.customProperties.translationPos = -0.5;
+        } else {
+            eraserObj.customProperties.translationPos = 0;
+        }
+        eraserObj.customProperties.isAnimateFloating = !eraserObj.customProperties.isAnimateFloating;
+    });
 
     world = WebGLWorld(gl);
     world.clearColor = [0.8, 0.8, 0.8, 1.0];
