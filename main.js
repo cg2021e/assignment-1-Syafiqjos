@@ -13,7 +13,7 @@ function main(){
 
         void main(){
             gl_PointSize = 10.0;
-            gl_Position = vec4(aPosition, 1.0);
+            gl_Position = vec4(aPosition + uPosition, 1.0);
             vColor = aColor;
         }
     `;
@@ -94,6 +94,8 @@ function WebGLWorld(gl){
         Deploy(){
             console.log("DEPLOY")
 
+            this.clearBackgroundRender();
+
             this.objects.forEach((item)=>{
                 let shaderProgram = this.gl.createProgram();
 
@@ -101,6 +103,7 @@ function WebGLWorld(gl){
                 let vertexBuffer = this.gl.createBuffer();
                 this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
                 this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(item.vertices), this.gl.STATIC_DRAW);
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
                 let vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
                 this.gl.shaderSource(vertexShader, item.vertexShaderSource);
                 this.gl.compileShader(vertexShader);
@@ -110,6 +113,7 @@ function WebGLWorld(gl){
                 let fragmentBuffer = this.gl.createBuffer();
                 this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, fragmentBuffer);
                 this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(item.indices), this.gl.STATIC_DRAW);
+                this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
                 let fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
                 this.gl.shaderSource(fragmentShader, item.fragmentShaderSource);
                 this.gl.compileShader(fragmentShader);
@@ -123,34 +127,17 @@ function WebGLWorld(gl){
                 item.buffers = { vertexBuffer, fragmentBuffer };
                 item.shaderProgram = shaderProgram;
 
-                // Position Attribute
-                let aPosition = this.gl.getAttribLocation(shaderProgram, "aPosition");
-                this.gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 0);
-                this.gl.enableVertexAttribArray(aPosition);
-
-                // Color Attribute
-                let aColor = this.gl.getAttribLocation(shaderProgram, "aColor");
-                this.gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
-                this.gl.enableVertexAttribArray(aColor);
-                
-                // Position Uniform
-                let uPosition = this.gl.getUniformLocation(shaderProgram, "uPosition");
-                this.gl.uniform3fv(uPosition, [item.pos.x, item.pos.y, item.pos.z]);
-
-                this.gl.drawElements(this.gl.TRIANGLES, item.indices.length, this.gl.UNSIGNED_SHORT, 0);
-
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
-                this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
+                this.renderObject(item);
             });
 
-            isDeployed = true;
-            isRendering = true;
+            this.options.isDeployed = true;
+            this.options.isRendering = true;
         },
         Render(){
-            if (isDeployed) {
-                if (isRendering){
+            if (this.options.isDeployed) {
+                if (this.options.isRendering){
                     this.clearBackgroundRender();
-                    this.objectsRender();
+                    this.renderObjects();
                 }
                 requestAnimationFrame(() => { this.Render() });
             } else {
@@ -158,29 +145,43 @@ function WebGLWorld(gl){
             }
         },
         clearBackgroundRender(){
-            this.gl.clearColor(0.5, 0.5, 0.5, 0.7);
+            this.gl.clearColor(0.5, 0.5, 0.5, 0.6);
+            this.gl.enable(gl.DEPTH_TEST);
             this.gl.clear(gl.COLOR_BUFFER_BIT);
         },
-        objectsRender(){
+        renderObjects(){
             this.objects.forEach((item)=>{
-                vertexBuffer = item.buffers.vertexBuffer;
-                fragmentBuffer = item.buffers.fragmentBuffer;
-                shaderProgram = item.shaderProgram;
-
-                if (vertexBuffer) this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
-                if (fragmentBuffer) this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, fragmentBuffer);
-
-                if (shaderProgram) {
-                    // Position Uniform
-                    let uPosition = this.gl.getUniformLocation(shaderProgram, "uPosition");
-                    this.gl.uniform3fv(uPosition, [item.pos.x, item.pos.y, item.pos.z]);
-                }
-
-                this.gl.drawElements(this.gl.TRIANGLES, item.indices.length, this.gl.UNSIGNED_SHORT, 0);
-
-                if (vertexBuffer) this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
-                if (fragmentBuffer) this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
+                this.renderObject(item);
             });
-        }
+        },
+        renderObject(item) {            
+            vertexBuffer = item.buffers.vertexBuffer;
+            fragmentBuffer = item.buffers.fragmentBuffer;
+            shaderProgram = item.shaderProgram;
+
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
+            this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, fragmentBuffer);
+
+            this.gl.useProgram(shaderProgram);
+
+            // Position Attribute
+            let aPosition = this.gl.getAttribLocation(shaderProgram, "aPosition");
+            this.gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 0);
+            this.gl.enableVertexAttribArray(aPosition);
+
+            // Color Attribute
+            let aColor = this.gl.getAttribLocation(shaderProgram, "aColor");
+            this.gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
+            this.gl.enableVertexAttribArray(aColor);
+            
+            // Position Uniform
+            let uPosition = this.gl.getUniformLocation(shaderProgram, "uPosition");
+            this.gl.uniform3fv(uPosition, [item.pos.x, item.pos.y, item.pos.z]);
+
+            this.gl.drawElements(this.gl.TRIANGLES, item.indices.length, this.gl.UNSIGNED_SHORT, 0);
+
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+            this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
+        },
     }
 }
