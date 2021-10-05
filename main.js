@@ -133,13 +133,32 @@ function main(){
         ...makeCord2(0.59713, -0.15966), ...colorRatherPink,
         ...makeCord2(0.66961, -0.17851), ...colorRatherPink,
         ...makeCord2(0.74355, -0.13647), ...colorRatherPink, //C58
+
+        ...makeCord2(-0.71629, -0.24229), ...colorRatherPink, // C59
+        ...makeCord2(-0.66555, -0.27999), ...colorRatherPink,
+        ...makeCord2(-0.55682, -0.27129), ...colorRatherPink,
+        ...makeCord2(-0.44809, -0.29303), ...colorRatherPink,
+        ...makeCord2(-0.33502, -0.27709), ...colorRatherPink,
+        ...makeCord2(-0.22339, -0.30028), ...colorRatherPink,
+        ...makeCord2(-0.09727, -0.28578), ...colorRatherPink,
+        ...makeCord2(0, -0.3), ...colorRatherPink,
+        ...makeCord2(0.15207, -0.28723), ...colorRatherPink,
+        ...makeCord2(0.255, -0.30318), ...colorRatherPink,
+        ...makeCord2(0.36808, -0.28433), ...colorRatherPink,
+        ...makeCord2(0.4739, -0.30318), ...colorRatherPink,
+        ...makeCord2(0.56523, -0.28578), ...colorRatherPink,
+        ...makeCord2(0.67686, -0.29448), ...colorRatherPink,
+        ...makeCord2(0.73195, -0.26114), ...colorRatherPink, // C73
+        
+        // ...makeCord2(), ...colorRatherPink,
     ];
     eraserObj.indices = [
         ...makeBatchIndices(0, 15, 15),
         ...makeBatchIndices(15, 30, 15),
         ...makeBatchIndices(30, 45, 14),
         43, 44, 58,
-
+        ...makeBatchIndices(45, 59, 15),
+        58, 73, 72,
     ];
 
     eraserObj.vertices = eraserObj.vertices.map((x, i) => {
