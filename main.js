@@ -3,6 +3,7 @@ function main(){
 
     const previewCanvas = document.getElementById('previewCanvas')
     const previewButton = document.getElementById('previewButton')
+    const previewButtonDesc = document.getElementById('previewButtonDesc')
     const gl = previewCanvas.getContext('webgl')
 
     let vertexShaderSource = `
@@ -78,8 +79,10 @@ function main(){
     previewButton.addEventListener('click', () => {
         if (eraserObj.customProperties.isAnimateFloating) {
             eraserObj.customProperties.translationPos = -0.5;
+            previewButtonDesc.innerText = "bouncing";
         } else {
             eraserObj.customProperties.translationPos = 0;
+            previewButtonDesc.innerText = "floating";
         }
         eraserObj.customProperties.isAnimateFloating = !eraserObj.customProperties.isAnimateFloating;
     });
