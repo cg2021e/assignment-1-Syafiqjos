@@ -371,7 +371,7 @@ function makeEraser(obj) {
         ...makeBatchIndices(45, 59, 15),
         58, 73, 72,
         ...makeBatchIndices(59, 74, 15),
-        ...makeBatchIndices(74, 89, 15),
+        ...makeBatchIndices(74, 89, 14),
         87, 88, 102
     ];
 }
