@@ -31,15 +31,36 @@ function main(){
     makeEraser(eraserObj);
     resizeObj(eraserObj, 0.5);
     eraserObj.pos.y = -0.5;
-    // eraserObj.animateFunc = function(pos){  
-    //     pos.x += 0.0089
-    //     return pos
-    // }
+    eraserObj.pos.x = 0.5;
+    eraserObj.customProperties = {
+        isAnimateFloating : false,
+        
+        translationSpeed : 0.0089, // My NRP ^_^
+        translationPos : 0,
+        translationInitPos : -0.41,
+        
+        sinSpeedFactor : 1.5,
+        sinHeightFactor: 0.4,
+    }
+    eraserObj.animateFunc = function(pos){  
+        this.customProperties.translationPos += this.customProperties.translationSpeed;
+        
+        if (this.customProperties.isAnimateFloating){
+            pos.y = Math.sin(this.customProperties.translationPos * this.customProperties.sinSpeedFactor) 
+                    * this.customProperties.sinHeightFactor + this.customProperties.translationInitPos;
+        } else {
+            pos.y = Math.sin(this.customProperties.translationPos * this.customProperties.sinSpeedFactor) 
+                    * this.customProperties.sinHeightFactor + this.customProperties.translationInitPos;
+        }
+
+        return pos;
+    }
     
     otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource);
     makeOtherEraser(otherObj);
     resizeObj(otherObj, 0.5);
     otherObj.pos.y = -0.5;
+    otherObj.pos.x = -0.5;
 
     world = WebGLWorld(gl);
     world.clearColor = [0.8, 0.8, 0.8, 1.0];
