@@ -36,21 +36,32 @@ function main(){
         isAnimateFloating : false,
         
         translationSpeed : 0.0089, // My NRP ^_^
+        translationSpeedFactor : 1.0,
         translationPos : 0,
         translationInitPos : -0.41,
         
+        bounceBorderTop: 0.0,
+        bounceBorderBottom: -0.8,
+
         sinSpeedFactor : 1.5,
         sinHeightFactor: 0.4,
     }
     eraserObj.animateFunc = function(pos){  
-        this.customProperties.translationPos += this.customProperties.translationSpeed;
+        this.customProperties.translationPos += this.customProperties.translationSpeed * this.customProperties.translationSpeedFactor;
         
         if (this.customProperties.isAnimateFloating){
+            this.customProperties.translationSpeedFactor = 1;
+
             pos.y = Math.sin(this.customProperties.translationPos * this.customProperties.sinSpeedFactor) 
                     * this.customProperties.sinHeightFactor + this.customProperties.translationInitPos;
         } else {
-            pos.y = Math.sin(this.customProperties.translationPos * this.customProperties.sinSpeedFactor) 
-                    * this.customProperties.sinHeightFactor + this.customProperties.translationInitPos;
+            if (this.customProperties.translationPos > this.customProperties.bounceBorderTop) {
+                this.customProperties.translationSpeedFactor = -1;
+            } else if (this.customProperties.translationPos < this.customProperties.bounceBorderBottom){
+                this.customProperties.translationSpeedFactor = 1;
+            }
+
+            pos.y = this.customProperties.translationPos;
         }
 
         return pos;
