@@ -52,23 +52,94 @@ function main(){
     //     4, 7, 6
     // ];
 
+    function makeCord2(x, y){
+        return [x, y, 0.0]
+    }
+
+    function makeBatchIndices(a, b, length){
+        let temp = []
+        for (let i = 0; i < length - 1; i++){
+            temp.push(a + i);
+            temp.push(a + i + 1);
+            temp.push(b + i + 1);
+
+            temp.push(a + i);
+            temp.push(b + i + 1);
+            temp.push(b + i);
+        }
+        return temp;
+    }
+
     eraserObj.vertices = [
-        -0.61, 0.26, 0.0, ...colorSoPink,     // 0
-         0.62, 0.26, 0.0, ...colorSoPink,     // 1
-         0.75, -0.14, 0.0, ...colorSoPink,    // 2
-         -0.75, -0.1, 0.0, ...colorSoPink,    // 3
-         -0.71, -0.25, 0.0, ...colorNotPink,   // 4
-         0.72, -0.28, 0.0, ...colorNotPink,    // 5
-         -0.65, -0.36, 0.0, ...colorSeemsBlack,   // 6
-         0.66, -0.36, 0.0, ...colorSeemsBlack,    // 7
+        ...makeCord2(-0.65, 0.25), ...colorSoPink, // C0
+        ...makeCord2(-0.56, 0.28) , ...colorSoPink,
+        ...makeCord2(-0.49, 0.26), ...colorSoPink,
+        ...makeCord2(-0.4, 0.27), ...colorSoPink,
+        ...makeCord2(-0.3, 0.26), ...colorSoPink,
+        ...makeCord2(-0.2, 0.27), ...colorSoPink,
+        ...makeCord2(-0.11, 0.26), ...colorSoPink,
+        ...makeCord2(0.0, 0.27), ...colorSoPink,
+        ...makeCord2(0.09, 0.25), ...colorSoPink,
+        ...makeCord2(0.22, 0.26), ...colorSoPink,
+        ...makeCord2(0.31, 0.24), ...colorSoPink,
+        ...makeCord2(0.45, 0.25), ...colorSoPink,
+        ...makeCord2(0.52, 0.24), ...colorSoPink,
+        ...makeCord2(0.6, 0.25), ...colorSoPink,
+        ...makeCord2(0.65, 0.23), ...colorSoPink, // C14,
+        
+        ...makeCord2(-0.7, 0.1), ...colorSoPink, // C15
+        ...makeCord2(-0.6, 0.1), ...colorSoPink,
+        ...makeCord2(-0.5, 0.1), ...colorSoPink,
+        ...makeCord2(-0.4, 0.1), ...colorSoPink,
+        ...makeCord2(-0.3, 0.1), ...colorSoPink,
+        ...makeCord2(-0.2, 0.1), ...colorSoPink,
+        ...makeCord2(-0.1, 0.1), ...colorSoPink,
+        ...makeCord2(0, 0.1), ...colorSoPink,
+        ...makeCord2(0.1, 0.1), ...colorSoPink,
+        ...makeCord2(0.2, 0.1), ...colorSoPink,
+        ...makeCord2(0.3, 0.1), ...colorSoPink,
+        ...makeCord2(0.4, 0.1), ...colorSoPink,
+        ...makeCord2(0.51, 0.1), ...colorSoPink,
+        ...makeCord2(0.6, 0.1), ...colorSoPink,
+        ...makeCord2(0.7, 0.08), ...colorSoPink, // C29
+
+        ...makeCord2(-0.73575, -0.07319), ...colorSoPink, // C30
+        ...makeCord2(-0.67462, -0.13431), ...colorSoPink,
+        ...makeCord2(-0.55892, -0.12995), ...colorSoPink,
+        ...makeCord2(-0.38645, -0.1365), ...colorSoPink,
+        ...makeCord2(-0.25547, -0.14741), ...colorSoPink,
+        ...makeCord2(-0.11357, -0.14086), ...colorSoPink,
+        ...makeCord2(-0.00223, -0.15614), ...colorSoPink,
+        ...makeCord2(0.10038, -0.14523), ...colorSoPink,
+        ...makeCord2(0.22481, -0.16051), ...colorSoPink,
+        ...makeCord2(0.3558, -0.13868), ...colorSoPink,
+        ...makeCord2(0.46713, -0.15396), ...colorSoPink,
+        ...makeCord2(0.59375, -0.1365), ...colorSoPink,
+        ...makeCord2(0.67234, -0.15178), ...colorSoPink,
+        ...makeCord2(0.73347, -0.11685), ...colorSoPink,
+        ...makeCord2(0.74875, -0.06227), ...colorSoPink, // C44
+        
+        ...makeCord2(-0.72701, -0.12558), ...colorRatherPink, // C45
+        ...makeCord2(-0.69427, -0.16706), ...colorRatherPink,
+        ...makeCord2(-0.55892, -0.16488), ...colorRatherPink,
+        ...makeCord2(-0.39301, -0.16981), ...colorRatherPink,
+        ...makeCord2(-0.26398, -0.17561), ...colorRatherPink,
+        ...makeCord2(-0.11322, -0.16981), ...colorRatherPink,
+        ...makeCord2(-0.00594, -0.18286), ...colorRatherPink,
+        ...makeCord2(0.10424, -0.16836), ...colorRatherPink,
+        ...makeCord2(0.22166, -0.18576), ...colorRatherPink,
+        ...makeCord2(0.36083, -0.16111), ...colorRatherPink,
+        ...makeCord2(0.46521, -0.17851), ...colorRatherPink,
+        ...makeCord2(0.59713, -0.15966), ...colorRatherPink,
+        ...makeCord2(0.66961, -0.17851), ...colorRatherPink,
+        ...makeCord2(0.74355, -0.13647), ...colorRatherPink, //C58
     ];
     eraserObj.indices = [
-        0, 1, 2,
-        2, 3, 0,
-        3, 2, 5,
-        3, 5, 4,
-        4, 5, 7,
-        4, 7, 6
+        ...makeBatchIndices(0, 15, 15),
+        ...makeBatchIndices(15, 30, 15),
+        ...makeBatchIndices(30, 45, 14),
+        43, 44, 58,
+
     ];
 
     eraserObj.vertices = eraserObj.vertices.map((x, i) => {
