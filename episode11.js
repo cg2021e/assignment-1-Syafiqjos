@@ -34,23 +34,29 @@ function main(){
         }
     `;
 
-    eraserObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource);
+    let eraserObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource);
     makeEraser(eraserObj);
     resizeObj(eraserObj, 0.5);
     
     eraserObj.pos.x = 0.5;
-    eraserObj.pos.y = -0.75;
+    eraserObj.pos.y = -0.5;
     eraserObj.pos.z = 3;
 
-    eraserObj.rotation.x = -90;
+    eraserObj.rotation.x = -80;
     eraserObj.rotation.y = 0;
     eraserObj.rotation.z = 90;
     
-    // otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource);
-    // makeOtherEraser(otherObj);
-    // resizeObj(otherObj, 0.5);
-    // otherObj.pos.y = -0.5;
-    // otherObj.pos.x = -0.5;
+    let otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource);
+    makeEraser(otherObj);
+    resizeObj(otherObj, 0.5);
+
+    otherObj.pos.x = -0.6;
+    otherObj.pos.y = -0.5;
+    otherObj.pos.z = 3;
+
+    otherObj.rotation.x = -80;
+    otherObj.rotation.y = 0;
+    otherObj.rotation.z = 30;
 
     // Preview Button
     previewButton.addEventListener('click', () => {
@@ -68,7 +74,7 @@ function main(){
     world.clearColor = [0.8, 0.8, 0.8, 1.0];
 
     world.AddObject(eraserObj);
-    // world.AddObject(otherObj);
+    world.AddObject(otherObj);
     
     world.Deploy();
     world.Render();
