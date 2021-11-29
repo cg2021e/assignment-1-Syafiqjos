@@ -37,9 +37,14 @@ function main(){
     eraserObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource);
     makeEraser(eraserObj);
     resizeObj(eraserObj, 0.5);
-    eraserObj.pos.y = -0.5;
-    eraserObj.pos.x = 0;
-    eraserObj.pos.z = 2;
+    
+    eraserObj.pos.x = 0.5;
+    eraserObj.pos.y = -0.75;
+    eraserObj.pos.z = 3;
+
+    eraserObj.rotation.x = -90;
+    eraserObj.rotation.y = 0;
+    eraserObj.rotation.z = 90;
     
     // otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource);
     // makeOtherEraser(otherObj);
@@ -77,6 +82,11 @@ function WebGLObject(gl, vertexShaderSource, fragmentShaderSource) {
     return {
         gl: gl,
         pos: {
+            x: 0,
+            y: 0,
+            z: 0
+        },
+        rotation: {
             x: 0,
             y: 0,
             z: 0
@@ -219,6 +229,9 @@ function WebGLWorld(gl){
             let uModel = this.gl.getUniformLocation(shaderProgram, "uModel");
             let model = glMatrix.mat4.create();
             glMatrix.mat4.translate(model, model, [item.pos.x, item.pos.y, item.pos.z]);
+            glMatrix.mat4.rotate(model, model, item.rotation.x / 180 * Math.PI, [1, 0, 0]);
+            glMatrix.mat4.rotate(model, model, item.rotation.y / 180 * Math.PI, [0, 1, 0]);
+            glMatrix.mat4.rotate(model, model, item.rotation.z / 180 * Math.PI, [0, 0, 1]);
             this.gl.uniformMatrix4fv(uModel, false, model);
 
             // Projection Uniform
