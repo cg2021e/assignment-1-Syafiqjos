@@ -1,8 +1,8 @@
 function makeEraser(obj) {
-    colorSoPink = [181/255, 94/255, 129/255];
-    colorRatherPink = [117/255, 55/255, 66/255];
-    colorNotPink = [79/255, 55/255, 63/255];
-    colorSeemsBlack = [23/255, 19/255, 22/255];
+    let colorSoPink = [181/255, 94/255, 129/255];
+    let colorRatherPink = [117/255, 55/255, 66/255];
+    let colorNotPink = [79/255, 55/255, 63/255];
+    let colorSeemsBlack = [23/255, 19/255, 22/255];
 
     obj.vertices = [
         -0.320000, 0.661920, 0.096621, 255, 78, 118, 
