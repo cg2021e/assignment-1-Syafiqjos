@@ -12,6 +12,7 @@ function main(){
         varying vec3 vColor;
 
         uniform vec3 uPosition;
+        uniform vec3 uScale;
 
         uniform mat4 uModel;
         uniform mat4 uView;
@@ -19,8 +20,7 @@ function main(){
 
         void main(){
             gl_PointSize = 10.0;
-            gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);
-            // gl_Position = uProjection * uView * vec4(aPosition + uPosition, 1.0);
+            gl_Position = uProjection * uView * uModel * vec4(aPosition.x * uScale.x, aPosition.y * uScale.y, aPosition.z * uScale.z, 1.0);
             vColor = aColor;
         }
     `;
@@ -96,6 +96,11 @@ function WebGLObject(gl, vertexShaderSource, fragmentShaderSource) {
             x: 0,
             y: 0,
             z: 0
+        },
+        scale: {
+            x: 1,
+            y: 1,
+            z: 1
         },
         vertices: [],
         indices: [],
@@ -230,6 +235,10 @@ function WebGLWorld(gl){
             // Position Uniform
             let uPosition = this.gl.getUniformLocation(shaderProgram, "uPosition");
             this.gl.uniform3fv(uPosition, [item.pos.x, item.pos.y, item.pos.z]);
+
+            // Scale Uniform
+            let uScale = this.gl.getUniformLocation(shaderProgram, "uScale");
+            this.gl.uniform3fv(uScale, [item.scale.x, item.scale.y, item.scale.z]);
 
             // Model Uniform
             let uModel = this.gl.getUniformLocation(shaderProgram, "uModel");
