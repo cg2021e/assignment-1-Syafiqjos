@@ -34,6 +34,8 @@ function main(){
         }
     `;
 
+    // Make Right Eraser
+
     let eraserObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource);
     makeEraser(eraserObj);
     resizeObj(eraserObj, 0.5);
@@ -46,6 +48,9 @@ function main(){
     eraserObj.rotation.y = 0;
     eraserObj.rotation.z = 90;
     
+
+    // Make Left Eraser
+
     let otherObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource);
     makeEraser(otherObj);
     resizeObj(otherObj, 0.5);
@@ -57,6 +62,24 @@ function main(){
     otherObj.rotation.x = -80;
     otherObj.rotation.y = 0;
     otherObj.rotation.z = 30;
+
+    // Make Light Cube
+
+    let cubeObj = WebGLObject(gl, vertexShaderSource, fragmentShaderSource);
+    makeCube(cubeObj);
+    resizeObj(cubeObj, 0.5);
+
+    cubeObj.pos.x = 0;
+    cubeObj.pos.y = -0.5;
+    cubeObj.pos.z = 3.5;
+
+    cubeObj.rotation.x = 0;
+    cubeObj.rotation.y = 0;
+    cubeObj.rotation.z = 0;
+
+    cubeObj.scale.x = 0.2;
+    cubeObj.scale.y = 0.2;
+    cubeObj.scale.z = 0.2;
 
     // Preview Button
     previewButton.addEventListener('click', () => {
@@ -75,6 +98,7 @@ function main(){
 
     world.AddObject(eraserObj);
     world.AddObject(otherObj);
+    world.AddObject(cubeObj);
     
     world.Deploy();
     world.Render();
