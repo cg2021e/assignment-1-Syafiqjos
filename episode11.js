@@ -29,8 +29,21 @@ function main(){
         precision mediump float;
         varying vec3 vColor;
         
+        uniform vec3 uAmbientConstantGlobal;
+        uniform vec3 uAmbientConstant;
+        uniform float uAmbientIntensityGlobal;
+        uniform float uAmbientIntensity;
+        
         void main(){
-            gl_FragColor = vec4(vColor, 1.0);
+            vec3 ambient = vec3(
+                    max(uAmbientConstant.x, uAmbientConstantGlobal.x), 
+                    max(uAmbientConstant.y, uAmbientConstantGlobal.y), 
+                    max(uAmbientConstant.z, uAmbientConstantGlobal.z)
+                ) * max(uAmbientIntensity, uAmbientIntensityGlobal);
+
+            vec3 phong = ambient; //+ diffuse + specular;
+
+            gl_FragColor = vec4(phong * vColor, 1.0);
         }
     `;
 
@@ -81,6 +94,8 @@ function main(){
     cubeObj.scale.y = 0.2;
     cubeObj.scale.z = 0.2;
 
+    cubeObj.lightning.ambientIntensity = 1.0;
+
     // Preview Button
     previewButton.addEventListener('click', () => {
         if (eraserObj.customProperties.isAnimateFloating) {
@@ -95,6 +110,9 @@ function main(){
 
     world = WebGLWorld(gl);
     world.clearColor = [0.8, 0.8, 0.8, 1.0];
+
+    world.lightning.ambientConstantGlobal = [1.0, 1.0, 1.0];
+    world.lightning.ambientIntensityGlobal = 0.289;
 
     world.AddObject(eraserObj);
     world.AddObject(otherObj);
@@ -128,6 +146,10 @@ function WebGLObject(gl, vertexShaderSource, fragmentShaderSource) {
         },
         vertices: [],
         indices: [],
+        lightning: {
+            ambientConstant: [ 0.0, 0.0, 0.0 ],
+            ambientIntensity: 0.0
+        },
         vertexShaderSource: vertexShaderSource,
         fragmentShaderSource: fragmentShaderSource,
         buffers: {
@@ -146,6 +168,10 @@ function WebGLWorld(gl){
         objects: [],
         projection: null,
         view: null,
+        lightning: {
+            ambientConstantGlobal: [ 1.0, 1.0, 1.0 ],
+            ambientIntensityGlobal: 1.0
+        },
         buffers: [],
         options: {
             isDeployed: false,
@@ -224,7 +250,12 @@ function WebGLWorld(gl){
             }
         },
         clearBackgroundRender(){
-            this.gl.clearColor(...this.clearColor);
+            let clearColor = 
+                [ this.clearColor[0] * this.lightning.ambientConstantGlobal[0] * this.lightning.ambientIntensityGlobal,
+                  this.clearColor[1] * this.lightning.ambientConstantGlobal[1] * this.lightning.ambientIntensityGlobal,
+                  this.clearColor[2] * this.lightning.ambientConstantGlobal[2] * this.lightning.ambientIntensityGlobal,
+                  1.0 ];
+            this.gl.clearColor(...clearColor);
             this.gl.enable(gl.DEPTH_TEST);
             this.gl.clear(gl.COLOR_BUFFER_BIT);
         },
@@ -280,6 +311,20 @@ function WebGLWorld(gl){
             // // View Uniform
             let uView = gl.getUniformLocation(shaderProgram, 'uView');
             gl.uniformMatrix4fv(uView, false, this.view);
+
+            // Ambient Lightning Global
+            let uAmbientConstantGlobal = gl.getUniformLocation(shaderProgram, 'uAmbientConstantGlobal');
+            gl.uniform3fv(uAmbientConstantGlobal, this.lightning.ambientConstantGlobal);
+
+            let uAmbientIntensityGlobal = gl.getUniformLocation(shaderProgram, 'uAmbientIntensityGlobal');
+            gl.uniform1f(uAmbientIntensityGlobal, this.lightning.ambientIntensityGlobal);
+
+            // // Ambient Lightning Local
+            let uAmbientConstant = gl.getUniformLocation(shaderProgram, 'uAmbientConstant');
+            gl.uniform3fv(uAmbientConstant, item.lightning.ambientConstant);
+
+            let uAmbientIntensity = gl.getUniformLocation(shaderProgram, 'uAmbientIntensity');
+            gl.uniform1f(uAmbientIntensity, item.lightning.ambientIntensity);
 
             this.gl.drawElements(this.gl.TRIANGLES, item.indices.length, this.gl.UNSIGNED_SHORT, 0);
 
