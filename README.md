@@ -12,6 +12,16 @@
 
 [Assignment 2 Result Link](https://cg2021e.github.io/assignment-1-Syafiqjos/assignment2.html)
 
+### Tools
+
+- Visual Studio Code
+- Chrome
+- Blender3D
+
+### Note
+
+Eraser 3D definition created from modelling on Blender3D then exported it in `.ply` file. After that exported `.ply` file will be altered into vertices and indices manually with Visual Studio Code into `make object js file`. All of trial and error of modelling data saved in `models` directory.
+
 ### Milestone
 
 ```
