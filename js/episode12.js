@@ -1,3 +1,49 @@
+class WebGLWorld {
+    constructor(gl, model, vertexShaderSource, fragmentShaderSource) {
+        this.gl = gl;
+        this.objects = [];
+        this.projection = null;
+        this.view = null;
+        this.camera = {
+            position: [0, 0, 0],
+            up: [0, 1, 0]
+        };
+        this.lightning = {
+            position: [0, 0, 0],
+            ambientConstantGlobal: [ 1.0, 1.0, 1.0 ],
+            ambientIntensityGlobal: 1.0
+        };
+        this.clearColor = [1.0, 1.0, 1.0, 1.0];
+    }
+
+    deploy() {
+        // Projection
+        this.projection = glMatrix.mat4.create();
+        glMatrix.mat4.perspective(this.projection, Math.PI / 3, 1, 0.5, 10);
+
+        // View
+        this.view = glMatrix.mat4.create();
+        glMatrix.mat4.lookAt(this.view, this.camera.position, [0, 0, 0], this.camera.up);
+
+        this.objects.forEach((x) => x.initialize());
+    }
+
+    render() {
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.clearColor(...this.clearColor);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
+        glMatrix.mat4.lookAt(this.view, this.camera.position, [0, 0, 0], this.camera.up);
+
+        this.objects.forEach((x) => x.render());
+    }
+
+    addObject(obj) {
+        this.objects.push(obj);
+        obj.world = this;
+    }
+}
+
 class WebGLObject {
     constructor(gl, model, vertexShaderSource, fragmentShaderSource) {
         this.gl = gl;
@@ -18,7 +64,21 @@ class WebGLObject {
             scale: [1, 1, 1]
         };
 
-        this._initialize();
+        this.world = null;
+    }
+
+    initialize() {
+        this._createVertexBuffer();
+        this._createFragmentBuffer();
+        this._createShader();
+        this._compileShader();
+        
+        this._createShaderProgram();
+        this._linkShaderProgram();
+        this._runShaderProgram();
+        
+        this._registerShaderAttribute();
+        this._registerShaderVar();
     }
 
     render() {
@@ -37,6 +97,18 @@ class WebGLObject {
         glMatrix.mat4.scale(model, model, this.transform.scale); // Scale
         this.gl.uniformMatrix4fv(this.shaderVar.uModel, false, model);
 
+        // View
+        this.gl.uniformMatrix4fv(this.shaderVar.uView, false, this.world.view);
+
+        // Projection
+        this.gl.uniformMatrix4fv(this.shaderVar.uProjection, false, this.world.projection);
+
+        // World Properties
+        this.gl.uniform3fv(this.shaderVar.uLightConstant, this.world.lightning.ambientConstantGlobal);
+        this.gl.uniform1f(this.shaderVar.uAmbientIntensity, this.world.lightning.ambientIntensityGlobal)
+        this.gl.uniform3fv(this.shaderVar.uLightPosition, this.world.lightning.position);
+        this.gl.uniform3fv(this.shaderVar.uViewerPosition, this.world.camera.position);
+
         // Normals
         var normalModel = glMatrix.mat3.create();
         glMatrix.mat3.normalFromMat4(normalModel, model);
@@ -45,20 +117,6 @@ class WebGLObject {
 
     _renderMesh() {
         this.gl.drawElements(this.gl.TRIANGLES, this.model.indices.length, this.gl.UNSIGNED_SHORT, 0);
-    }
-
-    _initialize() {
-        this._createVertexBuffer();
-        this._createFragmentBuffer();
-        this._createShader();
-        this._compileShader();
-        
-        this._createShaderProgram();
-        this._linkShaderProgram();
-        this._runShaderProgram();
-        
-        this._registerShaderAttribute();
-        this._registerShaderVar();
     }
 
     _createVertexBuffer() {
@@ -120,26 +178,11 @@ class WebGLObject {
         this.shaderVar.uView = this.gl.getUniformLocation(this.shaderProgram, "uView");
         this.shaderVar.uProjection = this.gl.getUniformLocation(this.shaderProgram, "uProjection");
 
-        let projection = glMatrix.mat4.create();
-        glMatrix.mat4.perspective(projection, Math.PI / 3, 1, 0.5, 10);
-        this.gl.uniformMatrix4fv(this.shaderVar.uProjection, false, projection);
-
-        let view = glMatrix.mat4.create();
-        let camera = [0, 0, 3];
-        glMatrix.mat4.lookAt(view, camera, [0, 0, 0], [0, 1, 0]);
-        this.gl.uniformMatrix4fv(this.shaderVar.uView, false, view);
-
+        this.shaderVar.uNormalModel = this.gl.getUniformLocation(this.shaderProgram, "uNormalModel");
+        this.shaderVar.uViewerPosition = this.gl.getUniformLocation(this.shaderProgram, "uViewerPosition");
+        this.shaderVar.uLightPosition = this.gl.getUniformLocation(this.shaderProgram, "uLightPosition");
         this.shaderVar.uLightConstant = this.gl.getUniformLocation(this.shaderProgram, "uLightConstant");
         this.shaderVar.uAmbientIntensity = this.gl.getUniformLocation(this.shaderProgram, "uAmbientIntensity");
-        
-        this.gl.uniform3fv(this.shaderVar.uLightConstant, [1.0, 0.5, 1.0]);   // orange light
-        this.gl.uniform1f(this.shaderVar.uAmbientIntensity, 0.4) // light intensity: 40%
-        
-        this.shaderVar.uLightPosition = this.gl.getUniformLocation(this.shaderProgram, "uLightPosition");
-        this.gl.uniform3fv(this.shaderVar.uLightPosition, [1.0, 1.0, 1.0]);
-        let uNormalModel = this.gl.getUniformLocation(this.shaderProgram, "uNormalModel");
-        let uViewerPosition = this.gl.getUniformLocation(this.shaderProgram, "uViewerPosition");
-        this.gl.uniform3fv(this.shaderVar.uViewerPosition, camera);
     }
 }
 
@@ -154,10 +197,10 @@ var vertexShaderSource = `
     uniform mat4 uView;
     uniform mat4 uProjection;
     void main() {
-        gl_Position = uProjection * uView * uModel * (vec4(aPosition * 2. / 3., 1.));
+        gl_Position = uProjection * uView * uModel * (vec4(aPosition, 1.0));
         vColor = aColor;
         vNormal = aNormal;
-        vPosition = (uModel * (vec4(aPosition * 2. / 3., 1.))).xyz;
+        vPosition = (uModel * (vec4(aPosition, 1.0))).xyz;
     }
 `;
 
@@ -166,21 +209,20 @@ var fragmentShaderSource = `
     varying vec3 vColor;
     varying vec3 vNormal;
     varying vec3 vPosition;
-    uniform vec3 uLightConstant;        // It represents the light color
-    uniform float uAmbientIntensity;    // It represents the light intensity
-    // uniform vec3 uLightDirection;
+    uniform vec3 uLightConstant;
+    uniform float uAmbientIntensity;
+    
     uniform vec3 uLightPosition;
     uniform mat3 uNormalModel;
     uniform vec3 uViewerPosition;
     void main() {
         vec3 ambient = uLightConstant * uAmbientIntensity;
-        // vec3 lightDirection = uLightDirection;
         vec3 lightDirection = uLightPosition - vPosition;
-        vec3 normalizedLight = normalize(lightDirection);  // [2., 0., 0.] becomes a unit vector [1., 0., 0.]
+        vec3 normalizedLight = normalize(lightDirection);
         vec3 normalizedNormal = normalize(uNormalModel * vNormal);
         float cosTheta = dot(normalizedNormal, normalizedLight);
-        vec3 diffuse = vec3(0., 0., 0.);
-        if (cosTheta > 0.) {
+        vec3 diffuse = vec3(0.0, 0.0, 0.0);
+        if (cosTheta > 0.0) {
             float diffuseIntensity = cosTheta;
             diffuse = uLightConstant * diffuseIntensity;
         }
@@ -188,35 +230,38 @@ var fragmentShaderSource = `
         vec3 normalizedReflector = normalize(reflector);
         vec3 normalizedViewer = normalize(uViewerPosition - vPosition);
         float cosPhi = dot(normalizedReflector, normalizedViewer);
-        vec3 specular = vec3(0., 0., 0.);
-        if (cosPhi > 0.) {
+        vec3 specular = vec3(0.0, 0.0, 0.0);
+        if (cosPhi > 0.0) {
             float shininessConstant = 100.0; 
             float specularIntensity = pow(cosPhi, shininessConstant); 
             specular = uLightConstant * specularIntensity;
         }
         vec3 phong = ambient + diffuse + specular;
-        gl_FragColor = vec4(phong * vColor, 1.);
+        gl_FragColor = vec4(phong * vColor, 1.0);
     }
 `;
 
 function main() {
-    var canvas = document.getElementById('previewCanvas'); 
-    var gl = canvas.getContext('webgl');
+    let canvas = document.getElementById('previewCanvas'); 
+    let gl = canvas.getContext('webgl');
 
     gl.viewport(0, 0, 640, 640);
 
-    var cubeModel = makeCube(cubeModel);
-    var cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
+    let cubeModel = makeCube();
+    let cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
+    cubeObject.transform.scale = [0.2, 0.2, 0.2];
+
+    let world = new WebGLWorld(gl);
+    
+    world.clearColor = [0.2, 0.2, 0.2, 1.0];
+    world.camera.position = [0, 0, 5];
+    world.camera.up = [0, 1, 0];
+    world.addObject(cubeObject);
+
+    world.deploy();
 
     function render() {
-        if (true) {
-            gl.enable(gl.DEPTH_TEST);
-            gl.clearColor(0.1, 0.1, 0.1, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-            cubeObject.render();
-        }
-
+        world.render();
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
