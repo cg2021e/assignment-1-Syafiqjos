@@ -280,6 +280,14 @@ function main() {
     cubeObject.transform.scale = [0.2, 0.2, 0.2];
     cubeObject.lightning.ambientIntensity = 1.0;
 
+    // Create EraserLeft Object and set some properties
+    let eraserLeftObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
+    eraserLeftObject.transform.position[0] = -2.5;
+
+    // Create EraserRight Object and set some properties
+    let eraserRightObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
+    eraserRightObject.transform.position[0] = 2.5;
+
     let world = new WebGLWorld(gl);
     
     world.clearColor = [0.2, 0.2, 0.2, 1.0];
@@ -288,6 +296,8 @@ function main() {
     world.lightning.ambientIntensityGlobal = 0.289; // My NRP ^_^
 
     world.addObject(cubeObject);
+    world.addObject(eraserLeftObject);
+    world.addObject(eraserRightObject);
 
     world.deploy();
 
