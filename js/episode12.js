@@ -107,9 +107,9 @@ class WebGLObject {
 
         // Transform
         glMatrix.mat4.translate(model, model, this.transform.position); // Position
-        glMatrix.mat4.rotate(model, model, this.transform.rotation[0], [1, 0, 0]); // Rotation X
-        glMatrix.mat4.rotate(model, model, this.transform.rotation[1], [0, 1, 0]); // Rotation Y
-        glMatrix.mat4.rotate(model, model, this.transform.rotation[2], [0, 0, 1]); // Rotation Z
+        glMatrix.mat4.rotate(model, model, this.transform.rotation[0] / 180 * Math.PI, [1, 0, 0]); // Rotation X
+        glMatrix.mat4.rotate(model, model, this.transform.rotation[1] / 180 * Math.PI, [0, 1, 0]); // Rotation Y
+        glMatrix.mat4.rotate(model, model, this.transform.rotation[2] / 180 * Math.PI, [0, 0, 1]); // Rotation Z
         glMatrix.mat4.scale(model, model, this.transform.scale); // Scale
         this.gl.uniformMatrix4fv(this.shaderVar.uModel, false, model);
 
@@ -279,14 +279,19 @@ function main() {
     let cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
     cubeObject.transform.scale = [0.2, 0.2, 0.2];
     cubeObject.lightning.ambientIntensity = 1.0;
+    cubeObject.transform.position = [0, -0.5, 3];
 
     // Create EraserLeft Object and set some properties
     let eraserLeftObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
-    eraserLeftObject.transform.position[0] = -2.5;
+    eraserLeftObject.transform.position = [-0.6, -0.5, 3];
+    eraserLeftObject.transform.rotation = [-80, 0, 30];
+    eraserLeftObject.transform.scale = [0.5, 0.5, 0.5];
 
     // Create EraserRight Object and set some properties
     let eraserRightObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
-    eraserRightObject.transform.position[0] = 2.5;
+    eraserRightObject.transform.position = [0.5, -0.5, 3];
+    eraserRightObject.transform.rotation = [-80, 0, 90];
+    eraserRightObject.transform.scale = [0.5, 0.5, 0.5];
 
     let world = new WebGLWorld(gl);
     
@@ -303,6 +308,9 @@ function main() {
 
     function render() {
         world.render();
+
+        // eraserRightObject.transform.rotation[0] += 0.1;
+
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
