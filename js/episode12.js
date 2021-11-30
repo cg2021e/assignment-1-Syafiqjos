@@ -48,6 +48,9 @@ class WebGLObject {
     constructor(gl, model, vertexShaderSource, fragmentShaderSource) {
         this.gl = gl;
         this.model = model;
+        this.lightning = {
+            ambientIntensity: 1.0
+        };
 
         this.vertexShaderSource = vertexShaderSource;
         this.fragmentShaderSource = fragmentShaderSource;
@@ -105,9 +108,12 @@ class WebGLObject {
 
         // World Properties
         this.gl.uniform3fv(this.shaderVar.uLightConstant, this.world.lightning.ambientConstantGlobal);
-        this.gl.uniform1f(this.shaderVar.uAmbientIntensity, this.world.lightning.ambientIntensityGlobal)
+        this.gl.uniform1f(this.shaderVar.uAmbientIntensityGlobal, this.world.lightning.ambientIntensityGlobal);
         this.gl.uniform3fv(this.shaderVar.uLightPosition, this.world.lightning.position);
         this.gl.uniform3fv(this.shaderVar.uViewerPosition, this.world.camera.position);
+
+        // Lightning
+        this.gl.uniform1f(this.shaderVar.uAmbientIntensity, this.lightning.ambientIntensity);
 
         // Normals
         var normalModel = glMatrix.mat3.create();
@@ -182,6 +188,7 @@ class WebGLObject {
         this.shaderVar.uViewerPosition = this.gl.getUniformLocation(this.shaderProgram, "uViewerPosition");
         this.shaderVar.uLightPosition = this.gl.getUniformLocation(this.shaderProgram, "uLightPosition");
         this.shaderVar.uLightConstant = this.gl.getUniformLocation(this.shaderProgram, "uLightConstant");
+        this.shaderVar.uAmbientIntensityGlobal = this.gl.getUniformLocation(this.shaderProgram, "uAmbientIntensityGlobal");
         this.shaderVar.uAmbientIntensity = this.gl.getUniformLocation(this.shaderProgram, "uAmbientIntensity");
     }
 }
@@ -210,13 +217,15 @@ var fragmentShaderSource = `
     varying vec3 vNormal;
     varying vec3 vPosition;
     uniform vec3 uLightConstant;
+
+    uniform float uAmbientIntensityGlobal;
     uniform float uAmbientIntensity;
     
     uniform vec3 uLightPosition;
     uniform mat3 uNormalModel;
     uniform vec3 uViewerPosition;
     void main() {
-        vec3 ambient = uLightConstant * uAmbientIntensity;
+        vec3 ambient = uLightConstant * max(uAmbientIntensity, uAmbientIntensityGlobal);
         vec3 lightDirection = uLightPosition - vPosition;
         vec3 normalizedLight = normalize(lightDirection);
         vec3 normalizedNormal = normalize(uNormalModel * vNormal);
@@ -250,12 +259,14 @@ function main() {
     let cubeModel = makeCube();
     let cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
     cubeObject.transform.scale = [0.2, 0.2, 0.2];
+    cubeObject.lightning.ambientIntensity = 1.0;
 
     let world = new WebGLWorld(gl);
     
     world.clearColor = [0.2, 0.2, 0.2, 1.0];
     world.camera.position = [0, 0, 5];
     world.camera.up = [0, 1, 0];
+    world.lightning.ambientIntensityGlobal = 0.289; // My NRP ^_^
     world.addObject(cubeObject);
 
     world.deploy();
