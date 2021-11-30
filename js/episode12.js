@@ -277,9 +277,9 @@ function main() {
 
     // Create Cube Object and set some properties
     let cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
-    cubeObject.transform.scale = [0.2, 0.2, 0.2];
+    cubeObject.transform.scale = [0.05, 0.05, 0.05];
     cubeObject.lightning.ambientIntensity = 1.0;
-    cubeObject.transform.position = [0, -0.5, 3];
+    cubeObject.transform.position = [0, -0.25, 4];
 
     // Create EraserLeft Object and set some properties
     let eraserLeftObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
@@ -299,6 +299,7 @@ function main() {
     world.camera.position = [0, 0, 5];
     world.camera.up = [0, 1, 0];
     world.lightning.ambientIntensityGlobal = 0.289; // My NRP ^_^
+    world.lightning.position = cubeObject.transform.position;
 
     world.addObject(cubeObject);
     world.addObject(eraserLeftObject);
