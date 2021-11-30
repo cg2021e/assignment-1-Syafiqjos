@@ -318,7 +318,7 @@ function main() {
     world.clearColor = [0.2, 0.2, 0.2, 1.0];
     world.camera.position = [0, 0, 5];
     world.camera.up = [0, 1, 0];
-    world.lightning.ambientIntensityGlobal = 0.289; // My NRP ^_^
+    world.lightning.ambientIntensityGlobal = 0.289; // 0.200 + My NRP ^_^
     world.lightning.position = cubeObject.transform.position;
 
     world.addObject(cubeObject);
