@@ -6,7 +6,7 @@
 
 ### Preview
 
-![image](https://user-images.githubusercontent.com/16128257/144119118-6ff9dcd6-4fc7-418c-bd6c-4014e3db85c1.png)
+![image](https://user-images.githubusercontent.com/16128257/144120328-b8da7e3b-695b-41c5-b6c2-e7317ca75964.png)
 
 ### Result
 
