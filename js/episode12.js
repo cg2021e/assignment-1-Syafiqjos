@@ -61,6 +61,11 @@ class WebGLObject {
         this.shaderProgram = null;
         this.shaderVar = {};
 
+        this.buffers = {
+            vertexBuffer: null,
+            fragmentBuffer: null
+        }
+
         this.transform = {
             position: [0, 0, 0],
             rotation: [0, 0, 0],
@@ -79,14 +84,22 @@ class WebGLObject {
         this._createShaderProgram();
         this._linkShaderProgram();
         this._runShaderProgram();
-        
-        this._registerShaderAttribute();
-        this._registerShaderVar();
     }
 
     render() {
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.vertexBuffer);
+        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.indexBuffer);
+        
+        this.gl.useProgram(this.shaderProgram);
+
+        this._registerShaderAttribute();
+        this._registerShaderVar();
+
         this._renderTransform();
         this._renderMesh();
+        
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
     }
 
     _renderTransform() {
@@ -126,15 +139,17 @@ class WebGLObject {
     }
 
     _createVertexBuffer() {
-        let vertexBuffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
+        this.buffers.vertexBuffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.vertexBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.model.vertices), this.gl.STATIC_DRAW);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
     }
 
     _createFragmentBuffer() {
-        let indexBuffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        this.buffers.indexBuffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.indexBuffer);
         this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.model.indices), this.gl.STATIC_DRAW);
+        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
     }
 
     _createShader() {
@@ -256,7 +271,11 @@ function main() {
 
     gl.viewport(0, 0, 640, 640);
 
+    // Get Models
     let cubeModel = makeCube();
+    let eraserModel = makeEraser();
+
+    // Create Cube Object and set some properties
     let cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
     cubeObject.transform.scale = [0.2, 0.2, 0.2];
     cubeObject.lightning.ambientIntensity = 1.0;
@@ -267,6 +286,7 @@ function main() {
     world.camera.position = [0, 0, 5];
     world.camera.up = [0, 1, 0];
     world.lightning.ambientIntensityGlobal = 0.289; // My NRP ^_^
+
     world.addObject(cubeObject);
 
     world.deploy();
