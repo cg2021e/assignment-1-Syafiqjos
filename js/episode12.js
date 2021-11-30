@@ -7,12 +7,11 @@ function main() {
 
     // Define vertices data consisting of position and color properties
 
-    let a = {};
-    makeCube(a);
+    var cubeModel = {};
+    makeCube(cubeModel);
 
-    var vertices = a.vertices;
-
-    var indices = a.indices;
+    var vertices = cubeModel.vertices;
+    var indices = cubeModel.indices;
 
     // Create a linked-list for storing the vertices data
     var vertexBuffer = gl.createBuffer();
@@ -107,35 +106,16 @@ function main() {
     //  the positional values from ARRAY_BUFFER
     //  to each vertex being processed
     var aPosition = gl.getAttribLocation(shaderProgram, "aPosition");
-    gl.vertexAttribPointer(
-        aPosition, 
-        3, 
-        gl.FLOAT, 
-        false, 
-        9 * Float32Array.BYTES_PER_ELEMENT, 
-        0
-    );
+    gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 9 * Float32Array.BYTES_PER_ELEMENT, 0);
     gl.enableVertexAttribArray(aPosition);
-    var aColor = gl.getAttribLocation(shaderProgram, "aColor");
-    gl.vertexAttribPointer(
-        aColor, 
-        3, 
-        gl.FLOAT, 
-        false, 
-        9 * Float32Array.BYTES_PER_ELEMENT, 
-        3 * Float32Array.BYTES_PER_ELEMENT
-    );
-    gl.enableVertexAttribArray(aColor);
+    
     var aNormal = gl.getAttribLocation(shaderProgram, "aNormal");
-    gl.vertexAttribPointer(
-        aNormal, 
-        3, 
-        gl.FLOAT, 
-        false, 
-        9 * Float32Array.BYTES_PER_ELEMENT, 
-        6 * Float32Array.BYTES_PER_ELEMENT
-    );
+    gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 9 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
     gl.enableVertexAttribArray(aNormal);
+
+    var aColor = gl.getAttribLocation(shaderProgram, "aColor");
+    gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 9 * Float32Array.BYTES_PER_ELEMENT, 6 * Float32Array.BYTES_PER_ELEMENT);
+    gl.enableVertexAttribArray(aColor);
 
     // Connect the uniform transformation matrices
     var uModel = gl.getUniformLocation(shaderProgram, "uModel");
@@ -144,24 +124,13 @@ function main() {
 
     // Set the projection matrix in the vertex shader
     var projection = glMatrix.mat4.create();
-    glMatrix.mat4.perspective(
-        projection,
-        Math.PI / 3,    // field of view
-        1,              // ratio
-        0.5,            // near clip
-        10              // far clip
-    );
+    glMatrix.mat4.perspective(projection, Math.PI / 3, 1, 0.5, 10);
     gl.uniformMatrix4fv(uProjection, false, projection);
 
     // Set the view matrix in the vertex shader
     var view = glMatrix.mat4.create();
     var camera = [0, 0, 3];
-    glMatrix.mat4.lookAt(
-        view,
-        camera,      // camera position
-        [0, 0, 0],      // the point where camera looks at
-        [0, 1, 0]       // up vector of the camera
-    );
+    glMatrix.mat4.lookAt(view, camera, [0, 0, 0], [0, 1, 0]);
     gl.uniformMatrix4fv(uView, false, view);
 
     // Define the lighting and shading
