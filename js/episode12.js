@@ -1,3 +1,172 @@
+class WebGLObject {
+    constructor(gl, model, vertexShaderSource, fragmentShaderSource) {
+        this.gl = gl;
+        this.model = model;
+
+        this.vertexShaderSource = vertexShaderSource;
+        this.fragmentShaderSource = fragmentShaderSource;
+
+        this.vertexShader = null;
+        this.fragmentShader = null;
+
+        this.shaderProgram = null;
+        this.shaderVar = {};
+
+        this._initialize();
+    }
+
+    _initialize() {
+        this._createVertexBuffer();
+        this._createFragmentBuffer();
+        this._createShader();
+        this._compileShader();
+        
+        this._createShaderProgram();
+        this._linkShaderProgram();
+        this._runShaderProgram();
+        
+        this._registerShaderAttribute();
+        this._registerShaderVar();
+    }
+
+    _createVertexBuffer() {
+        let vertexBuffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.model.vertices), this.gl.STATIC_DRAW);
+    }
+
+    _createFragmentBuffer() {
+        let indexBuffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.model.indices), this.gl.STATIC_DRAW);
+    }
+
+    _createShader() {
+        this.vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+        this.gl.shaderSource(this.vertexShader, this.vertexShaderSource);
+        
+        this.fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+        this.gl.shaderSource(this.fragmentShader, this.fragmentShaderSource);
+    }
+
+    _compileShader() {
+        this.gl.compileShader(this.vertexShader);
+        this.gl.compileShader(this.fragmentShader);
+    }
+
+    _createShaderProgram() {
+        this.shaderProgram = this.gl.createProgram();
+    }
+
+    _linkShaderProgram() {
+        this.gl.attachShader(this.shaderProgram, this.vertexShader);
+        this.gl.attachShader(this.shaderProgram, this.fragmentShader);
+
+        this.gl.linkProgram(this.shaderProgram);
+    }
+
+    _runShaderProgram() {
+        this.gl.useProgram(this.shaderProgram);
+    }
+
+    _registerShaderAttribute() {
+        this.shaderVar.aPosition = this.gl.getAttribLocation(this.shaderProgram, "aPosition");
+        this.gl.vertexAttribPointer(this.shaderVar.aPosition, 3, this.gl.FLOAT, false, 9 * Float32Array.BYTES_PER_ELEMENT, 0);
+        this.gl.enableVertexAttribArray(this.shaderVar.aPosition);
+        
+        this.shaderVar.aNormal = this.gl.getAttribLocation(this.shaderProgram, "aNormal");
+        this.gl.vertexAttribPointer(this.shaderVar.aNormal, 3, this.gl.FLOAT, false, 9 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
+        this.gl.enableVertexAttribArray(this.shaderVar.aNormal);
+
+        this.shaderVar.aColor = this.gl.getAttribLocation(this.shaderProgram, "aColor");
+        this.gl.vertexAttribPointer(this.shaderVar.aColor, 3, this.gl.FLOAT, false, 9 * Float32Array.BYTES_PER_ELEMENT, 6 * Float32Array.BYTES_PER_ELEMENT);
+        this.gl.enableVertexAttribArray(this.shaderVar.aColor);
+    }
+
+    _registerShaderVar() {
+        this.shaderVar.uModel = this.gl.getUniformLocation(this.shaderProgram, "uModel");
+        this.shaderVar.uView = this.gl.getUniformLocation(this.shaderProgram, "uView");
+        this.shaderVar.uProjection = this.gl.getUniformLocation(this.shaderProgram, "uProjection");
+
+        let projection = glMatrix.mat4.create();
+        glMatrix.mat4.perspective(projection, Math.PI / 3, 1, 0.5, 10);
+        this.gl.uniformMatrix4fv(this.shaderVar.uProjection, false, projection);
+
+        let view = glMatrix.mat4.create();
+        let camera = [0, 0, 3];
+        glMatrix.mat4.lookAt(view, camera, [0, 0, 0], [0, 1, 0]);
+        this.gl.uniformMatrix4fv(this.shaderVar.uView, false, view);
+
+        this.shaderVar.uLightConstant = this.gl.getUniformLocation(this.shaderProgram, "uLightConstant");
+        this.shaderVar.uAmbientIntensity = this.gl.getUniformLocation(this.shaderProgram, "uAmbientIntensity");
+        
+        this.gl.uniform3fv(this.shaderVar.uLightConstant, [1.0, 0.5, 1.0]);   // orange light
+        this.gl.uniform1f(this.shaderVar.uAmbientIntensity, 0.4) // light intensity: 40%
+        
+        this.shaderVar.uLightPosition = this.gl.getUniformLocation(this.shaderProgram, "uLightPosition");
+        this.gl.uniform3fv(this.shaderVar.uLightPosition, [1.0, 1.0, 1.0]);
+        let uNormalModel = this.gl.getUniformLocation(this.shaderProgram, "uNormalModel");
+        let uViewerPosition = this.gl.getUniformLocation(this.shaderProgram, "uViewerPosition");
+        this.gl.uniform3fv(this.shaderVar.uViewerPosition, camera);
+    }
+}
+
+var vertexShaderSource = `
+    attribute vec3 aPosition;
+    attribute vec3 aColor;
+    attribute vec3 aNormal;
+    varying vec3 vColor;
+    varying vec3 vNormal;
+    varying vec3 vPosition;
+    uniform mat4 uModel;
+    uniform mat4 uView;
+    uniform mat4 uProjection;
+    void main() {
+        gl_Position = uProjection * uView * uModel * (vec4(aPosition * 2. / 3., 1.));
+        vColor = aColor;
+        vNormal = aNormal;
+        vPosition = (uModel * (vec4(aPosition * 2. / 3., 1.))).xyz;
+    }
+`;
+
+var fragmentShaderSource = `
+    precision mediump float;
+    varying vec3 vColor;
+    varying vec3 vNormal;
+    varying vec3 vPosition;
+    uniform vec3 uLightConstant;        // It represents the light color
+    uniform float uAmbientIntensity;    // It represents the light intensity
+    // uniform vec3 uLightDirection;
+    uniform vec3 uLightPosition;
+    uniform mat3 uNormalModel;
+    uniform vec3 uViewerPosition;
+    void main() {
+        vec3 ambient = uLightConstant * uAmbientIntensity;
+        // vec3 lightDirection = uLightDirection;
+        vec3 lightDirection = uLightPosition - vPosition;
+        vec3 normalizedLight = normalize(lightDirection);  // [2., 0., 0.] becomes a unit vector [1., 0., 0.]
+        vec3 normalizedNormal = normalize(uNormalModel * vNormal);
+        float cosTheta = dot(normalizedNormal, normalizedLight);
+        vec3 diffuse = vec3(0., 0., 0.);
+        if (cosTheta > 0.) {
+            float diffuseIntensity = cosTheta;
+            diffuse = uLightConstant * diffuseIntensity;
+        }
+        vec3 reflector = reflect(-lightDirection, normalizedNormal);
+        vec3 normalizedReflector = normalize(reflector);
+        vec3 normalizedViewer = normalize(uViewerPosition - vPosition);
+        float cosPhi = dot(normalizedReflector, normalizedViewer);
+        vec3 specular = vec3(0., 0., 0.);
+        if (cosPhi > 0.) {
+            float shininessConstant = 100.0; 
+            float specularIntensity = pow(cosPhi, shininessConstant); 
+            specular = uLightConstant * specularIntensity;
+        }
+        vec3 phong = ambient + diffuse + specular;
+        gl_FragColor = vec4(phong * vColor, 1.);
+    }
+`;
+
 function main() {
     //Access the canvas through DOM: Document Object Model
     var canvas = document.getElementById('previewCanvas');   // The paper
@@ -5,172 +174,12 @@ function main() {
 
     gl.viewport(0, 0, 640, 640);
 
-    // Define vertices data consisting of position and color properties
-
-    var cubeModel = {};
-    makeCube(cubeModel);
-
-    var vertices = cubeModel.vertices;
-    var indices = cubeModel.indices;
-
-    // Create a linked-list for storing the vertices data
-    var vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-    // Create a linked-list for storing the indices data
-    var indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-
-    var vertexShaderSource = `
-        attribute vec3 aPosition;
-        attribute vec3 aColor;
-        attribute vec3 aNormal;
-        varying vec3 vColor;
-        varying vec3 vNormal;
-        varying vec3 vPosition;
-        uniform mat4 uModel;
-        uniform mat4 uView;
-        uniform mat4 uProjection;
-        void main() {
-            gl_Position = uProjection * uView * uModel * (vec4(aPosition * 2. / 3., 1.));
-            vColor = aColor;
-            vNormal = aNormal;
-            vPosition = (uModel * (vec4(aPosition * 2. / 3., 1.))).xyz;
-        }
-    `;
-
-    var fragmentShaderSource = `
-        precision mediump float;
-        varying vec3 vColor;
-        varying vec3 vNormal;
-        varying vec3 vPosition;
-        uniform vec3 uLightConstant;        // It represents the light color
-        uniform float uAmbientIntensity;    // It represents the light intensity
-        // uniform vec3 uLightDirection;
-        uniform vec3 uLightPosition;
-        uniform mat3 uNormalModel;
-        uniform vec3 uViewerPosition;
-        void main() {
-            vec3 ambient = uLightConstant * uAmbientIntensity;
-            // vec3 lightDirection = uLightDirection;
-            vec3 lightDirection = uLightPosition - vPosition;
-            vec3 normalizedLight = normalize(lightDirection);  // [2., 0., 0.] becomes a unit vector [1., 0., 0.]
-            vec3 normalizedNormal = normalize(uNormalModel * vNormal);
-            float cosTheta = dot(normalizedNormal, normalizedLight);
-            vec3 diffuse = vec3(0., 0., 0.);
-            if (cosTheta > 0.) {
-                float diffuseIntensity = cosTheta;
-                diffuse = uLightConstant * diffuseIntensity;
-            }
-            vec3 reflector = reflect(-lightDirection, normalizedNormal);
-            vec3 normalizedReflector = normalize(reflector);
-            vec3 normalizedViewer = normalize(uViewerPosition - vPosition);
-            float cosPhi = dot(normalizedReflector, normalizedViewer);
-            vec3 specular = vec3(0., 0., 0.);
-            if (cosPhi > 0.) {
-                float shininessConstant = 100.0; 
-                float specularIntensity = pow(cosPhi, shininessConstant); 
-                specular = uLightConstant * specularIntensity;
-            }
-            vec3 phong = ambient + diffuse + specular;
-            gl_FragColor = vec4(phong * vColor, 1.);
-        }
-    `;
-
-    // Create .c in GPU
-    var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertexShader, vertexShaderSource);
-    var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fragmentShader, fragmentShaderSource);
-
-    // Compile .c into .o
-    gl.compileShader(vertexShader);
-    gl.compileShader(fragmentShader);
-
-    // Prepare a .exe shell (shader program)
-    var shaderProgram = gl.createProgram();
-
-    // Put the two .o files into the shell
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-
-    // Link the two .o files, so together they can be a runnable program/context.
-    gl.linkProgram(shaderProgram);
-
-    // Start using the context (analogy: start using the paints and the brushes)
-    gl.useProgram(shaderProgram);
-
-    // Teach the computer how to collect
-    //  the positional values from ARRAY_BUFFER
-    //  to each vertex being processed
-    var aPosition = gl.getAttribLocation(shaderProgram, "aPosition");
-    gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 9 * Float32Array.BYTES_PER_ELEMENT, 0);
-    gl.enableVertexAttribArray(aPosition);
-    
-    var aNormal = gl.getAttribLocation(shaderProgram, "aNormal");
-    gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 9 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
-    gl.enableVertexAttribArray(aNormal);
-
-    var aColor = gl.getAttribLocation(shaderProgram, "aColor");
-    gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 9 * Float32Array.BYTES_PER_ELEMENT, 6 * Float32Array.BYTES_PER_ELEMENT);
-    gl.enableVertexAttribArray(aColor);
-
-    // Connect the uniform transformation matrices
-    var uModel = gl.getUniformLocation(shaderProgram, "uModel");
-    var uView = gl.getUniformLocation(shaderProgram, "uView");
-    var uProjection = gl.getUniformLocation(shaderProgram, "uProjection");
-
-    // Set the projection matrix in the vertex shader
-    var projection = glMatrix.mat4.create();
-    glMatrix.mat4.perspective(projection, Math.PI / 3, 1, 0.5, 10);
-    gl.uniformMatrix4fv(uProjection, false, projection);
-
-    // Set the view matrix in the vertex shader
-    var view = glMatrix.mat4.create();
-    var camera = [0, 0, 3];
-    glMatrix.mat4.lookAt(view, camera, [0, 0, 0], [0, 1, 0]);
-    gl.uniformMatrix4fv(uView, false, view);
-
-    // Define the lighting and shading
-    var uLightConstant = gl.getUniformLocation(shaderProgram, "uLightConstant");
-    var uAmbientIntensity = gl.getUniformLocation(shaderProgram, "uAmbientIntensity");
-    gl.uniform3fv(uLightConstant, [1.0, 0.5, 1.0]);   // orange light
-    gl.uniform1f(uAmbientIntensity, 0.4) // light intensity: 40%
-    // var uLightDirection = gl.getUniformLocation(shaderProgram, "uLightDirection");
-    // gl.uniform3fv(uLightDirection, [2.0, 0.0, 0.0]);    // light comes from the right side
-    var uLightPosition = gl.getUniformLocation(shaderProgram, "uLightPosition");
-    gl.uniform3fv(uLightPosition, [1.0, 1.0, 1.0]);
-    var uNormalModel = gl.getUniformLocation(shaderProgram, "uNormalModel");
-    var uViewerPosition = gl.getUniformLocation(shaderProgram, "uViewerPosition");
-    gl.uniform3fv(uViewerPosition, camera);
-
-    var freeze = false;
-    // Apply some interaction using mouse
-    function onMouseClick(event) {
-        freeze = !freeze;
-    }
-    document.addEventListener("click", onMouseClick, false);
-    // Apply some interaction using keyboard
-    function onKeydown(event) {
-        if (event.keyCode == 32) freeze = true;
-    }
-    function onKeyup(event) {
-        if (event.keyCode == 32) freeze = false;
-    }
-    document.addEventListener("keydown", onKeydown, false);
-    document.addEventListener("keyup", onKeyup, false);
-
-    var speed = [3/600, 2/600, 0];
-    var change = [0, 0, 0];
+    var cubeModel = makeCube(cubeModel);
+    var cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
 
     function render() {
-        if (!freeze) { // If it is not freezing, then animate the rectangle
-            if (change[0] >= 0.5 || change[0] <= -0.5) speed[0] = -speed[0];
-            if (change[1] >= 0.5 || change[1] <= -0.5) speed[1] = -speed[1];
-            change[0] = change[0] + speed[0];
-            change[1] = change[1] + speed[1];
+        let change = [0, 0, 0];
+        if (true) { // If it is not freezing, then animate the rectangle
             // Init the model matrix
             var model = glMatrix.mat4.create();
             // Define a rotation matrix about x axis and store it to the model matrix
@@ -180,17 +189,18 @@ function main() {
             // Define a translation matrix and store it to the model matrix
             glMatrix.mat4.translate(model, model, change);
             // Set the model matrix in the vertex shader
-            gl.uniformMatrix4fv(uModel, false, model);
+            gl.uniformMatrix4fv(cubeObject.shaderVar.uModel, false, model);
             // Set the model matrix for normal vector
             var normalModel = glMatrix.mat3.create();
             glMatrix.mat3.normalFromMat4(normalModel, model);
-            gl.uniformMatrix3fv(uNormalModel, false, normalModel);
+            gl.uniformMatrix3fv(cubeObject.shaderVar.uNormalModel, false, normalModel);
             // Reset the frame buffer
             gl.enable(gl.DEPTH_TEST);
             gl.clearColor(0.1, 0.1, 0.1, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, cubeObject.model.indices.length, gl.UNSIGNED_SHORT, 0);
         }
+
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
