@@ -307,10 +307,26 @@ function main() {
 
     world.deploy();
 
+    // Controller
+    let cubePosition = cubeObject.transform.position;
+    let cameraPosition = world.camera.position;
+    let cubeSpeed = 0.05;
+    let cameraSpeed = 0.05;
+    let moveRatio = 0.1;
+
+    document.addEventListener("keydown", (event) => {
+        if (event.keyCode == 'W'.charCodeAt()) cubePosition[1] += cubeSpeed;
+        else if (event.keyCode == 'S'.charCodeAt()) cubePosition[1] -= cubeSpeed;
+        
+        if (event.keyCode == 'A'.charCodeAt()) cameraPosition[0] -= cameraSpeed;
+        else if (event.keyCode == 'D'.charCodeAt()) cameraPosition[0] += cameraSpeed;
+    }, false);
+
     function render() {
         world.render();
 
-        // eraserRightObject.transform.rotation[0] += 0.1;
+        cubeObject.transform.position = lerpVec3(cubeObject.transform.position, cubePosition, moveRatio);
+        world.camera.position = lerpVec3(world.camera.position, cameraPosition, moveRatio);
 
         requestAnimationFrame(render);
     }
