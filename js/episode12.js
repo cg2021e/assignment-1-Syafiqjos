@@ -294,14 +294,14 @@ function main() {
     let eraserLeftObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
     eraserLeftObject.transform.position = [-0.6, -0.5, 3];
     eraserLeftObject.transform.rotation = [-80, 0, 30];
-    eraserLeftObject.transform.scale = [0.5, 0.5, 0.5];
+    eraserLeftObject.transform.scale = [0.15, 0.15, 0.15];
     eraserLeftObject.lightning.shininessConstant = 5; // Plastic Shininess, around 5 - 10
 
     // Create EraserRight Object and set some properties
     let eraserRightObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
     eraserRightObject.transform.position = [0.5, -0.5, 3];
     eraserRightObject.transform.rotation = [-80, 0, 90];
-    eraserRightObject.transform.scale = [0.5, 0.5, 0.5];
+    eraserRightObject.transform.scale = [0.15, 0.15, 0.15];
     eraserRightObject.lightning.shininessConstant = 200; // Metal Shininess, around 100 - 200
 
     let world = new WebGLWorld(gl);
