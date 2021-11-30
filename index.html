@@ -8,17 +8,24 @@
 
     <link rel="stylesheet" href="./css/style.css">
 
-    <script defer src="./js/main.js"></script>
+    <script src="./js/gl-matrix-min.js"></script>
+    <script defer src="./js/helper.js"></script>
+    <script defer src="./js/makeEraserSmoothWithNormals.js"></script>
+    <script defer src="./js/makeCubeWithNormals.js"></script>
+    <script defer src="./js/episode12.js"></script>
 </head>
 <body>
-    <h1>E For Eraser | Syafiqjos</h1>
+    <h1>E For Eraser 3D | Syafiqjos</h1>
     <h2>Name: Ahmad Syafiq Aqil Wafi</h2>
     <h3>NRP: 05111940000089</h3>
     <div class="preview-container">
         <canvas width="640" height="360" class="preview-canvas" id="previewCanvas">
             Your Browser doesn't support Canvas
         </canvas>
-        <button id="previewButton" class="preview-button">TAP<div id="previewButtonDesc" class="preview-button__desc">bouncing</div></button>
+        <div class="preview-button preview-button--new">
+            <p>Hold A and D to move the camera.</p>
+            <p>Hold W and S to move the light source.</p>
+        </div>
     </div>
     <p><a class="author-text" href="https://github.com/Syafiqjos">Author : github.com/Syafiqjos</a></p>
 </body>
