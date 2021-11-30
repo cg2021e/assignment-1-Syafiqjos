@@ -48,6 +48,11 @@ h2, h3, p {
     border-bottom-right-radius: 0px;
 }
 
+.preview-canvas-full {
+    box-shadow : 0px 0px 50px rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+}
+
 .preview-button {
     box-shadow : 0px 0px 50px rgba(0, 0, 0, 0.2);
 
