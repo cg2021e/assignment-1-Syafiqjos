@@ -326,6 +326,7 @@ function main() {
         world.render();
 
         cubeObject.transform.position = lerpVec3(cubeObject.transform.position, cubePosition, moveRatio);
+        world.lightning.position = lerpVec3(world.lightning.position, cubePosition, moveRatio);
         world.camera.position = lerpVec3(world.camera.position, cameraPosition, moveRatio);
 
         requestAnimationFrame(render);
