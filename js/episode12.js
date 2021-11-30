@@ -315,7 +315,7 @@ function main() {
 
     let world = new WebGLWorld(gl);
     
-    world.clearColor = [0.2, 0.2, 0.2, 1.0];
+    world.clearColor = [0.8, 0.8, 0.8, 1.0];
     world.camera.position = [0, 0, 5];
     world.camera.up = [0, 1, 0];
     world.lightning.ambientIntensityGlobal = 0.289; // 0.200 + My NRP ^_^
