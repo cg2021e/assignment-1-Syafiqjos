@@ -6,6 +6,7 @@ class WebGLWorld {
         this.view = null;
         this.camera = {
             position: [0, 0, 0],
+            look: [0, 0, 0],
             up: [0, 1, 0]
         };
         this.lightning = {
@@ -19,22 +20,24 @@ class WebGLWorld {
     deploy() {
         // Projection
         this.projection = glMatrix.mat4.create();
-        glMatrix.mat4.perspective(this.projection, Math.PI / 3, 1, 0.5, 10);
 
         // View
         this.view = glMatrix.mat4.create();
-        glMatrix.mat4.lookAt(this.view, this.camera.position, [0, 0, 0], this.camera.up);
 
         this.objects.forEach((x) => x.initialize());
     }
 
     render() {
+        // Clear Screen
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.clearColor(...this.clearColor);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-        glMatrix.mat4.lookAt(this.view, this.camera.position, [0, 0, 0], this.camera.up);
+        // Configure Camera
+        glMatrix.mat4.perspective(this.projection, Math.PI / 3, 1, 0.5, 10);
+        glMatrix.mat4.lookAt(this.view, this.camera.position, this.camera.look, this.camera.up);
 
+        // Render each object
         this.objects.forEach((x) => x.render());
     }
 
