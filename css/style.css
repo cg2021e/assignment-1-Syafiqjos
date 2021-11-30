@@ -75,9 +75,19 @@ h2, h3, p {
     cursor: pointer;
 }
 
+.preview-button--new {
+    padding: 2rem;
+    width: 150px;
+}
+
 .preview-button:hover {
     background-color: white;
     color: rgb(100, 42, 50);
+}
+
+.preview-button--new:hover {
+    background-color: rgb(100, 42, 50);
+    color: white;
 }
 
 .preview-button__desc {
