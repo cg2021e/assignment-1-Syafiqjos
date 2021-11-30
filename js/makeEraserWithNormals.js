@@ -1,4 +1,6 @@
-function makeEraser(obj) {
+function makeEraser() {
+    let obj = {};
+
     obj.vertices = [
         -0.320000, 0.661920, 0.096621, 0, 0, 0, 255, 78, 118, 
         -0.295790, 0.746555, 0.138902, 0, 0, 0, 255, 78, 118, 
@@ -235,4 +237,6 @@ function makeEraser(obj) {
         }
         return v;
     });
+
+    return obj;
 }

@@ -1,4 +1,6 @@
-function makeCube(obj) {
+function makeCube() {
+    let obj = {};
+    
     obj.vertices = [
         -1, -1, 1, -1, 0, 0, 255, 255, 255,
         -1, 1, -1, -1, 0, 0, 255, 255, 255,
@@ -47,4 +49,6 @@ function makeCube(obj) {
         }
         return v;
     });
+
+    return obj;
 }
