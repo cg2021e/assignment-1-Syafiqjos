@@ -57,3 +57,15 @@ function resizeObj(obj, scale){
         return x * scale;
     });
 }
+
+function lerp(source, target, ratio) {
+    return source + (target - source) * ratio;
+}
+
+function lerpVec3(source, target, ratio) {
+    return [
+        lerp(source[0], target[0], ratio),
+        lerp(source[1], target[1], ratio),
+        lerp(source[2], target[2], ratio),
+    ];
+}
