@@ -52,7 +52,8 @@ class WebGLObject {
         this.gl = gl;
         this.model = model;
         this.lightning = {
-            ambientIntensity: 0.0
+            ambientIntensity: 0.0,
+            shininessConstant: 100
         };
 
         this.vertexShaderSource = vertexShaderSource;
@@ -130,6 +131,7 @@ class WebGLObject {
 
         // Lightning
         this.gl.uniform1f(this.shaderVar.uAmbientIntensity, this.lightning.ambientIntensity);
+        this.gl.uniform1f(this.shaderVar.uShininessConstant, this.lightning.shininessConstant);
 
         // Normals
         var normalModel = glMatrix.mat3.create();
@@ -208,6 +210,7 @@ class WebGLObject {
         this.shaderVar.uLightConstant = this.gl.getUniformLocation(this.shaderProgram, "uLightConstant");
         this.shaderVar.uAmbientIntensityGlobal = this.gl.getUniformLocation(this.shaderProgram, "uAmbientIntensityGlobal");
         this.shaderVar.uAmbientIntensity = this.gl.getUniformLocation(this.shaderProgram, "uAmbientIntensity");
+        this.shaderVar.uShininessConstant = this.gl.getUniformLocation(this.shaderProgram, "uShininessConstant");
     }
 }
 
@@ -242,6 +245,9 @@ var fragmentShaderSource = `
     uniform vec3 uLightPosition;
     uniform mat3 uNormalModel;
     uniform vec3 uViewerPosition;
+
+    uniform float uShininessConstant;
+
     void main() {
         vec3 ambient = uLightConstant * max(uAmbientIntensity, uAmbientIntensityGlobal);
         vec3 lightDirection = uLightPosition - vPosition;
@@ -259,7 +265,7 @@ var fragmentShaderSource = `
         float cosPhi = dot(normalizedReflector, normalizedViewer);
         vec3 specular = vec3(0.0, 0.0, 0.0);
         if (cosPhi > 0.0) {
-            float shininessConstant = 100.0; 
+            float shininessConstant = uShininessConstant; 
             float specularIntensity = pow(cosPhi, shininessConstant); 
             specular = uLightConstant * specularIntensity;
         }
@@ -289,12 +295,14 @@ function main() {
     eraserLeftObject.transform.position = [-0.6, -0.5, 3];
     eraserLeftObject.transform.rotation = [-80, 0, 30];
     eraserLeftObject.transform.scale = [0.5, 0.5, 0.5];
+    eraserLeftObject.lightning.shininessConstant = 5; // Plastic Shininess, around 5 - 10
 
     // Create EraserRight Object and set some properties
     let eraserRightObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
     eraserRightObject.transform.position = [0.5, -0.5, 3];
     eraserRightObject.transform.rotation = [-80, 0, 90];
     eraserRightObject.transform.scale = [0.5, 0.5, 0.5];
+    eraserRightObject.lightning.shininessConstant = 200; // Metal Shininess, around 100 - 200
 
     let world = new WebGLWorld(gl);
     
