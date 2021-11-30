@@ -49,7 +49,7 @@ class WebGLObject {
         this.gl = gl;
         this.model = model;
         this.lightning = {
-            ambientIntensity: 1.0
+            ambientIntensity: 0.0
         };
 
         this.vertexShaderSource = vertexShaderSource;
