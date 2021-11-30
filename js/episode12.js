@@ -1,3 +1,12 @@
+// Name : Ahmad Syafiq Aqil Wafi
+// NRP : 05111940000089
+// Last NRP Digit: 089
+// Class : Computer Graphics E - ITS
+
+// Light Shininess for left object (plastic) defined on line 307
+// Light Shininess for right object (metallic) defined on line 314
+// Ambient light (Last three NRP Digit) defined on line 321
+
 class WebGLWorld {
     constructor(gl, model, vertexShaderSource, fragmentShaderSource) {
         this.gl = gl;
