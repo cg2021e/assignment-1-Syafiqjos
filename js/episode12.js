@@ -12,7 +12,39 @@ class WebGLObject {
         this.shaderProgram = null;
         this.shaderVar = {};
 
+        this.transform = {
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1]
+        };
+
         this._initialize();
+    }
+
+    render() {
+        this._renderTransform();
+        this._renderMesh();
+    }
+
+    _renderTransform() {
+        var model = glMatrix.mat4.create();
+
+        // Transform
+        glMatrix.mat4.translate(model, model, this.transform.position); // Position
+        glMatrix.mat4.rotate(model, model, this.transform.rotation[0], [1, 0, 0]); // Rotation X
+        glMatrix.mat4.rotate(model, model, this.transform.rotation[1], [0, 1, 0]); // Rotation Y
+        glMatrix.mat4.rotate(model, model, this.transform.rotation[2], [0, 0, 1]); // Rotation Z
+        glMatrix.mat4.scale(model, model, this.transform.scale); // Scale
+        this.gl.uniformMatrix4fv(this.shaderVar.uModel, false, model);
+
+        // Normals
+        var normalModel = glMatrix.mat3.create();
+        glMatrix.mat3.normalFromMat4(normalModel, model);
+        this.gl.uniformMatrix3fv(this.shaderVar.uNormalModel, false, normalModel);
+    }
+
+    _renderMesh() {
+        this.gl.drawElements(this.gl.TRIANGLES, this.model.indices.length, this.gl.UNSIGNED_SHORT, 0);
     }
 
     _initialize() {
@@ -168,9 +200,8 @@ var fragmentShaderSource = `
 `;
 
 function main() {
-    //Access the canvas through DOM: Document Object Model
-    var canvas = document.getElementById('previewCanvas');   // The paper
-    var gl = canvas.getContext('webgl');                // The brush and the paints
+    var canvas = document.getElementById('previewCanvas'); 
+    var gl = canvas.getContext('webgl');
 
     gl.viewport(0, 0, 640, 640);
 
@@ -178,27 +209,12 @@ function main() {
     var cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
 
     function render() {
-        let change = [0, 0, 0];
-        if (true) { // If it is not freezing, then animate the rectangle
-            // Init the model matrix
-            var model = glMatrix.mat4.create();
-            // Define a rotation matrix about x axis and store it to the model matrix
-            glMatrix.mat4.rotate(model, model, change[0], [1, 0, 0]);
-            // Define a rotation matrix about y axis and store it to the model matrix
-            glMatrix.mat4.rotate(model, model, change[1], [0, 1, 0]);
-            // Define a translation matrix and store it to the model matrix
-            glMatrix.mat4.translate(model, model, change);
-            // Set the model matrix in the vertex shader
-            gl.uniformMatrix4fv(cubeObject.shaderVar.uModel, false, model);
-            // Set the model matrix for normal vector
-            var normalModel = glMatrix.mat3.create();
-            glMatrix.mat3.normalFromMat4(normalModel, model);
-            gl.uniformMatrix3fv(cubeObject.shaderVar.uNormalModel, false, normalModel);
-            // Reset the frame buffer
+        if (true) {
             gl.enable(gl.DEPTH_TEST);
             gl.clearColor(0.1, 0.1, 0.1, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            gl.drawElements(gl.TRIANGLES, cubeObject.model.indices.length, gl.UNSIGNED_SHORT, 0);
+
+            cubeObject.render();
         }
 
         requestAnimationFrame(render);
