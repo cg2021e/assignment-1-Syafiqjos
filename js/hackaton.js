@@ -20,6 +20,7 @@ class WebGLWorld {
         };
         this.lightning = {
             position: [0, 0, 0],
+            on: true,
             ambientConstantGlobal: [ 1.0, 1.0, 1.0 ],
             ambientIntensityGlobal: 1.0
         };
@@ -134,6 +135,7 @@ class WebGLObject {
         this.gl.uniformMatrix4fv(this.shaderVar.uProjection, false, this.world.projection);
 
         // World Properties
+        this.gl.uniform1f(this.shaderVar.uLightOn, this.world.lightning.on ? 1 : 0);
         this.gl.uniform3fv(this.shaderVar.uLightConstant, this.world.lightning.ambientConstantGlobal);
         this.gl.uniform1f(this.shaderVar.uAmbientIntensityGlobal, this.world.lightning.ambientIntensityGlobal);
         this.gl.uniform3fv(this.shaderVar.uLightPosition, this.world.lightning.position);
@@ -215,6 +217,7 @@ class WebGLObject {
         this.shaderVar.uView = this.gl.getUniformLocation(this.shaderProgram, "uView");
         this.shaderVar.uProjection = this.gl.getUniformLocation(this.shaderProgram, "uProjection");
 
+        this.shaderVar.uLightOn = this.gl.getUniformLocation(this.shaderProgram, "uLightOn");
         this.shaderVar.uIsSpecular = this.gl.getUniformLocation(this.shaderProgram, "uIsSpecular");
 
         this.shaderVar.uNormalModel = this.gl.getUniformLocation(this.shaderProgram, "uNormalModel");
@@ -260,6 +263,7 @@ var fragmentShaderSource = `
     uniform vec3 uViewerPosition;
 
     uniform float uIsSpecular;
+    uniform float uLightOn;
 
     uniform float uShininessConstant;
 
@@ -292,17 +296,30 @@ var fragmentShaderSource = `
                 specular = specular * 0.0;
             }
         }
+
+        if (uLightOn == 0.0) {
+            diffuse = diffuse * 0.0;
+            specular = specular * 0.0;
+        }
+
         vec3 phong = ambient + diffuse + specular;
         gl_FragColor = vec4(phong * vColor, 1.0);
     }
 `;
 
+// Definitions
 let world;
 
 let cubeObject;
 let eraserLeftObject;
 let eraserRightObject;
 let planeObject;
+
+let cubePosition;
+let cameraPosition;
+let cubeSpeed;
+let cameraSpeed;
+let moveRatio;
 
 function main() {
     let canvas = document.getElementById('previewCanvas'); 
@@ -352,15 +369,18 @@ function main() {
 
     challenge4(world, world.gl);
 
-    // Controller
-    let cubePosition = cubeObject.transform.position;
-    let cameraPosition = world.camera.position;
-    let cubeSpeed = 0.05;
-    let cameraSpeed = 0.05;
-    let moveRatio = 0.1;
+    cubePosition = cubeObject.transform.position;
+    cameraPosition = world.camera.position;
+    cubeSpeed = 0.05;
+    cameraSpeed = 0.05;
+    moveRatio = 0.1;
 
     function render() {
         world.render();
+
+        cubeObject.transform.position = lerpVec3(cubeObject.transform.position, cubePosition, moveRatio);
+        world.lightning.position = lerpVec3(world.lightning.position, cubePosition, moveRatio);
+        world.camera.position = lerpVec3(world.camera.position, cameraPosition, moveRatio);
 
         requestAnimationFrame(render);
     }
@@ -428,11 +448,11 @@ function challenge4(world, gl) {
         isLightingUp = !isLightingUp;
 
         if (isLightingUp) {
-            world.lightning.ambientIntensityGlobal = 0.289; // My NRP ^_^
+            world.lightning.on = true;
             world.clearColor = [0.8, 0.8, 0.8, 1.0];
             cubeObject.lightning.ambientIntensity = 1.0;
         } else {
-            world.lightning.ambientIntensityGlobal = 0.0;
+            world.lightning.on = false;
             world.clearColor = [0, 0, 0, 1.0];
             cubeObject.lightning.ambientIntensity = -1.0;
         }
