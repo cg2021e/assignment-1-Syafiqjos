@@ -61,7 +61,8 @@ class WebGLObject {
         this.gl = gl;
         this.model = model;
         this.lightning = {
-            ambientIntensity: 0.0,
+            isSpecular: false, 
+            ambientIntensity: -1.0,
             shininessConstant: 100
         };
 
@@ -139,6 +140,7 @@ class WebGLObject {
         this.gl.uniform3fv(this.shaderVar.uViewerPosition, this.world.camera.position);
 
         // Lightning
+        this.gl.uniform1f(this.shaderVar.uIsSpecular, this.lightning.isSpecular ? 1 : 0);
         this.gl.uniform1f(this.shaderVar.uAmbientIntensity, this.lightning.ambientIntensity);
         this.gl.uniform1f(this.shaderVar.uShininessConstant, this.lightning.shininessConstant);
 
@@ -213,6 +215,8 @@ class WebGLObject {
         this.shaderVar.uView = this.gl.getUniformLocation(this.shaderProgram, "uView");
         this.shaderVar.uProjection = this.gl.getUniformLocation(this.shaderProgram, "uProjection");
 
+        this.shaderVar.uIsSpecular = this.gl.getUniformLocation(this.shaderProgram, "uIsSpecular");
+
         this.shaderVar.uNormalModel = this.gl.getUniformLocation(this.shaderProgram, "uNormalModel");
         this.shaderVar.uViewerPosition = this.gl.getUniformLocation(this.shaderProgram, "uViewerPosition");
         this.shaderVar.uLightPosition = this.gl.getUniformLocation(this.shaderProgram, "uLightPosition");
@@ -255,10 +259,16 @@ var fragmentShaderSource = `
     uniform mat3 uNormalModel;
     uniform vec3 uViewerPosition;
 
+    uniform float uIsSpecular;
+
     uniform float uShininessConstant;
 
     void main() {
-        vec3 ambient = uLightConstant * max(uAmbientIntensity, uAmbientIntensityGlobal);
+        vec3 ambient = uLightConstant * uAmbientIntensityGlobal;
+        if (uAmbientIntensity >= 0.0) {
+            ambient = uLightConstant * uAmbientIntensity;
+        }
+
         vec3 lightDirection = uLightPosition - vPosition;
         vec3 normalizedLight = normalize(lightDirection);
         vec3 normalizedNormal = normalize(uNormalModel * vNormal);
@@ -277,11 +287,22 @@ var fragmentShaderSource = `
             float shininessConstant = uShininessConstant; 
             float specularIntensity = pow(cosPhi, shininessConstant); 
             specular = uLightConstant * specularIntensity;
+
+            if (uIsSpecular == 0.0) {
+                specular = specular * 0.0;
+            }
         }
         vec3 phong = ambient + diffuse + specular;
         gl_FragColor = vec4(phong * vColor, 1.0);
     }
 `;
+
+let world;
+
+let cubeObject;
+let eraserLeftObject;
+let eraserRightObject;
+let planeObject;
 
 function main() {
     let canvas = document.getElementById('previewCanvas'); 
@@ -294,26 +315,26 @@ function main() {
     let eraserModel = makeEraser();
 
     // Create Cube Object and set some properties
-    let cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
+    cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
     cubeObject.transform.scale = [0.05, 0.05, 0.05];
     cubeObject.lightning.ambientIntensity = 1.0;
     cubeObject.transform.position = [0, -0.25, 4];
 
     // Create EraserLeft Object and set some properties
-    let eraserLeftObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
+    eraserLeftObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
     eraserLeftObject.transform.position = [-0.6, -0.5, 3];
     eraserLeftObject.transform.rotation = [-80, 0, 30];
     eraserLeftObject.transform.scale = [0.15, 0.15, 0.15];
     eraserLeftObject.lightning.shininessConstant = 5; // Plastic Shininess, around 5 - 10
 
     // Create EraserRight Object and set some properties
-    let eraserRightObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
+    eraserRightObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
     eraserRightObject.transform.position = [0.5, -0.5, 3];
     eraserRightObject.transform.rotation = [-80, 0, 90];
     eraserRightObject.transform.scale = [0.15, 0.15, 0.15];
     eraserRightObject.lightning.shininessConstant = 200; // Metal Shininess, around 100 - 200
 
-    let world = new WebGLWorld(gl);
+    world = new WebGLWorld(gl);
     
     world.clearColor = [0.8, 0.8, 0.8, 1.0];
     world.camera.position = [0, 0, 5];
@@ -328,6 +349,8 @@ function main() {
     challenge3(world, world.gl);
 
     world.deploy();
+
+    challenge4(world, world.gl);
 
     // Controller
     let cubePosition = cubeObject.transform.position;
@@ -386,13 +409,42 @@ function challenge3(world, gl){
     }
 
     const planeModel = makePlane();
-    const planeObject = new WebGLObject(gl, planeModel, vertexShaderSource, fragmentShaderSource);
+    planeObject = new WebGLObject(gl, planeModel, vertexShaderSource, fragmentShaderSource);
     planeObject.transform.scale = [20, 1, 20]; // 20x20 unit scale
-    planeObject.lightning.ambientIntensity = 1.0;
     planeObject.transform.position = [-5, -0.7, 2];
-    planeObject.lightning.shininessConstant = 0;
 
     world.addObject(planeObject);
+}
+
+function challenge4(world, gl) {
+    planeObject.lightning.isSpecular = false;
+    eraserLeftObject.lightning.isSpecular = true;
+    eraserRightObject.lightning.isSpecular = true;
+    cubeObject.lightning.isSpecular = true;
+
+    let isLightingUp = true;
+
+    function toggleLightning() {
+        isLightingUp = !isLightingUp;
+
+        if (isLightingUp) {
+            world.lightning.ambientIntensityGlobal = 0.289; // My NRP ^_^
+            world.clearColor = [0.8, 0.8, 0.8, 1.0];
+            cubeObject.lightning.ambientIntensity = 1.0;
+        } else {
+            world.lightning.ambientIntensityGlobal = 0.0;
+            world.clearColor = [0, 0, 0, 1.0];
+            cubeObject.lightning.ambientIntensity = -1.0;
+        }
+    }
+
+    document.addEventListener("keydown", (event) => {
+        if (event.keyCode == ' '.charCodeAt()) {
+            console.log('Pressed Space');
+
+            toggleLightning();
+        }
+    }, false);
 }
 
 main();
