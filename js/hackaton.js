@@ -15,6 +15,7 @@ class WebGLWorld {
         this.view = null;
         this.camera = {
             position: [0, 0, 0],
+            zoom: 1.0,
             look: [0, 0, 0],
             up: [0, 1, 0]
         };
@@ -44,7 +45,7 @@ class WebGLWorld {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
         // Configure Camera
-        glMatrix.mat4.perspective(this.projection, Math.PI / 3, 1, 0.5, 10);
+        glMatrix.mat4.perspective(this.projection, Math.PI / 3 * this.camera.zoom, 1, 0.5, 50);
         glMatrix.mat4.lookAt(this.view, this.camera.position, this.camera.look, this.camera.up);
 
         // Render each object
@@ -319,6 +320,10 @@ let cubePosition;
 let cameraPosition;
 let cubeSpeed;
 let cameraSpeed;
+let cameraZoom;
+let cameraOrbX;
+let cameraOrbLength;
+let cameraOrbSpeed;
 let moveRatio;
 
 function main() {
@@ -335,18 +340,18 @@ function main() {
     cubeObject = new WebGLObject(gl, cubeModel, vertexShaderSource, fragmentShaderSource);
     cubeObject.transform.scale = [0.05, 0.05, 0.05];
     cubeObject.lightning.ambientIntensity = 1.0;
-    cubeObject.transform.position = [0, -0.25, 4];
+    cubeObject.transform.position = [0, -0.25, 4 - 2];
 
     // Create EraserLeft Object and set some properties
     eraserLeftObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
-    eraserLeftObject.transform.position = [-0.6, -0.5, 3];
+    eraserLeftObject.transform.position = [-0.6, -0.5, 3 - 2];
     eraserLeftObject.transform.rotation = [-80, 0, 30];
     eraserLeftObject.transform.scale = [0.15, 0.15, 0.15];
     eraserLeftObject.lightning.shininessConstant = 5; // Plastic Shininess, around 5 - 10
 
     // Create EraserRight Object and set some properties
     eraserRightObject = new WebGLObject(gl, eraserModel, vertexShaderSource, fragmentShaderSource);
-    eraserRightObject.transform.position = [0.5, -0.5, 3];
+    eraserRightObject.transform.position = [0.5, -0.5, 3 - 2];
     eraserRightObject.transform.rotation = [-80, 0, 90];
     eraserRightObject.transform.scale = [0.15, 0.15, 0.15];
     eraserRightObject.lightning.shininessConstant = 200; // Metal Shininess, around 100 - 200
@@ -354,7 +359,7 @@ function main() {
     world = new WebGLWorld(gl);
     
     world.clearColor = [0.8, 0.8, 0.8, 1.0];
-    world.camera.position = [0, 0, 5];
+    world.camera.position = [0, 0, 0];
     world.camera.up = [0, 1, 0];
     world.lightning.ambientIntensityGlobal = 0.289; // 0.200 + My NRP ^_^
     world.lightning.position = cubeObject.transform.position;
@@ -368,19 +373,32 @@ function main() {
     world.deploy();
 
     challenge4(world, world.gl);
+    challenge5(world, world.gl);
 
     cubePosition = cubeObject.transform.position;
     cameraPosition = world.camera.position;
     cubeSpeed = 0.05;
     cameraSpeed = 0.05;
     moveRatio = 0.1;
+    cameraZoom = world.camera.zoom;
+    cameraOrbX = 90 / 180 * Math.PI;
+    cameraOrbLength = 4;
+    cameraOrbSpeed = 0.1;
 
     function render() {
         world.render();
 
+        cameraPosition = [ Math.cos(cameraOrbX) * cameraOrbLength, cameraPosition[1], Math.sin(cameraOrbX) * cameraOrbLength ];
+        cameraPosition = [
+            cameraPosition[0] + 0,
+            cameraPosition[1] + 0,
+            cameraPosition[2] + 0,
+        ];
+
         cubeObject.transform.position = lerpVec3(cubeObject.transform.position, cubePosition, moveRatio);
         world.lightning.position = lerpVec3(world.lightning.position, cubePosition, moveRatio);
         world.camera.position = lerpVec3(world.camera.position, cameraPosition, moveRatio);
+        world.camera.zoom = lerp(world.camera.zoom, cameraZoom, moveRatio);
 
         requestAnimationFrame(render);
     }
@@ -431,7 +449,7 @@ function challenge3(world, gl){
     const planeModel = makePlane();
     planeObject = new WebGLObject(gl, planeModel, vertexShaderSource, fragmentShaderSource);
     planeObject.transform.scale = [20, 1, 20]; // 20x20 unit scale
-    planeObject.transform.position = [-5, -0.7, 2];
+    planeObject.transform.position = [-5, -0.7, 2 - 10];
 
     world.addObject(planeObject);
 }
@@ -463,6 +481,34 @@ function challenge4(world, gl) {
             console.log('Pressed Space');
 
             toggleLightning();
+        }
+    }, false);
+}
+
+function challenge5(world, gl) {
+        document.addEventListener("keydown", (event) => {
+        if (event.keyCode == 'W'.charCodeAt()) {
+            cubePosition[2] -= cubeSpeed;
+        } else if (event.keyCode == 'S'.charCodeAt()) {
+            cubePosition[2] += cubeSpeed;
+        }
+
+        if (event.keyCode == 'A'.charCodeAt()) {
+            cubePosition[0] -= cubeSpeed;
+        } else if (event.keyCode == 'D'.charCodeAt()) {
+            cubePosition[0] += cubeSpeed;
+        }
+
+        if (event.keyCode == 38) { // Up Arrow
+            cameraZoom -= 0.1;
+        } else if (event.keyCode == 40) { // Down Arrow
+            cameraZoom += 0.1;
+        }
+
+        if (event.keyCode == 37) {
+            cameraOrbX += cameraOrbSpeed;
+        } else if (event.keyCode == 39) {
+            cameraOrbX -= cameraOrbSpeed;
         }
     }, false);
 }
