@@ -325,6 +325,8 @@ function main() {
     world.addObject(eraserLeftObject);
     world.addObject(eraserRightObject);
 
+    challenge3(world, world.gl);
+
     world.deploy();
 
     // Controller
@@ -340,6 +342,57 @@ function main() {
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
+}
+
+function challenge3(world, gl){
+    function makePlane() {
+        const obj = {};
+
+        obj.vertices = [
+            1.000000, 0.000000, 1.000000, 0.000000, 1.000000, 0.000000, 1.0, 1.0, 0.1,
+            -1.000000, 0.000000, 1.000000, 0.000000, 1.000000, 0.000000, 1.0, 1.0, 0.1,
+            1.000000, 0.000000, -1.000000, 0.000000, 1.000000, 0.000000, 1.0, 1.0, 0.1,
+            -1.000000, 0.000000, 1.000000, 0.000000, 1.000000, 0.000000, 1.0, 1.0, 0.1,
+        ];
+
+        // My NRP ^_^
+        console.log('Challenge 3');
+        console.log('My NRP ^_^');
+        let nrp_color = 0x089089;
+        console.log(nrp_color);
+        
+        let nrp_color_new = [
+            ((nrp_color & (255 << 8 * 2)) >> 8 * 2),
+            ((nrp_color & (255 << 8 * 1)) >> 8 * 1),
+            ((nrp_color & (255 << 8 * 0)) >> 8 * 0)
+        ];
+
+        console.log(nrp_color_new);
+        
+        obj.vertices = obj.vertices.map((v, i) => {
+        if (i % 9 >= 6) {
+                let c = i % 9 % 3;
+                return nrp_color_new[c] / 255;
+            }
+            return v;
+        });
+
+        obj.indices = [
+            0, 1, 2,
+            2, 3, 0
+        ];
+
+        return obj;
+    }
+
+    const planeModel = makePlane();
+    const planeObject = new WebGLObject(gl, planeModel, vertexShaderSource, fragmentShaderSource);
+    planeObject.transform.scale = [20, 1, 20]; // 20x20 unit scale
+    planeObject.lightning.ambientIntensity = 1.0;
+    planeObject.transform.position = [-5, -0.7, 2];
+    planeObject.lightning.shininessConstant = 0;
+
+    world.addObject(planeObject);
 }
 
 main();
